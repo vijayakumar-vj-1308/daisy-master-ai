@@ -1,0 +1,136 @@
+/* ==========================================================================
+   RESECTOR 7 — HUD METERS, GAUGES, STATUS CARDS & POPULATION
+   ========================================================================== */
+
+.hud-status-bar {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 1fr;
+  gap: 16px;
+  width: 100%;
+  position: relative;
+  z-index: 15;
+}
+
+.hud-card {
+  background: rgba(6, 14, 26, 0.75);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(0, 240, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.hud-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.hud-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+}
+
+.hud-value {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.oxygen-val {
+  color: var(--cyan-core);
+  text-shadow: 0 0 8px var(--cyan-glow);
+}
+
+.memory-val {
+  color: var(--blue-hologram);
+  text-shadow: 0 0 8px rgba(26, 140, 255, 0.6);
+}
+
+.population-val {
+  color: var(--text-primary);
+}
+
+/* Meter Progress Tracks */
+.hud-meter-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.hud-meter-fill {
+  height: 100%;
+  transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease;
+  position: relative;
+}
+
+.oxygen-fill {
+  background: linear-gradient(90deg, #0088ff, var(--cyan-core));
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.memory-fill {
+  background: linear-gradient(90deg, #5b21b6, #8b5cf6, var(--blue-hologram));
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
+}
+
+.hud-card-sub {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Warning & Emergency States */
+.hud-card.alert {
+  border-color: var(--red-emergency);
+  box-shadow: 0 0 15px rgba(255, 30, 64, 0.3), inset 0 0 10px rgba(255, 30, 64, 0.15);
+}
+
+.hud-card.alert .hud-value {
+  color: var(--red-emergency);
+  text-shadow: 0 0 10px var(--red-glow);
+  animation: pulseEmergencyText 1s infinite alternate;
+}
+
+.hud-card.alert .oxygen-fill {
+  background: var(--red-emergency);
+  box-shadow: 0 0 10px var(--red-glow);
+}
+
+.hud-card.warning {
+  border-color: var(--orange-warning);
+}
+
+.hud-card.warning .hud-value {
+  color: var(--orange-warning);
+  text-shadow: 0 0 8px var(--orange-glow);
+}
+
+@keyframes pulseEmergencyText {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+@media (max-width: 860px) {
+  .hud-status-bar {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .hud-card {
+    padding: 8px 12px;
+  }
+}

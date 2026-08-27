@@ -1,0 +1,650 @@
+/**
+ * RESECTOR 7 — MAIN APPLICATION CONTROLLER (DAISY-FIRST)
+ * Orchestrates cinematic flows where Daisy controls the entire experience.
+ * Zero unnecessary buttons or disjointed menus.
+ */
+
+class ResectorApp {
+  constructor() {
+    this.dom = {
+      body: document.getElementById('app-body'),
+      header: document.getElementById('station-header'),
+      mainContainer: document.getElementById('main-container'),
+      oxygenDisplay: document.getElementById('oxygen-display'),
+      oxygenFill: document.getElementById('oxygen-meter-fill'),
+      oxygenCard: document.getElementById('hud-oxygen-card'),
+      oxygenSub: document.getElementById('oxygen-status-sub'),
+      memoryDisplay: document.getElementById('memory-display'),
+      memoryFill: document.getElementById('memory-meter-fill'),
+      memoryCard: document.getElementById('hud-memory-card'),
+      memorySub: document.getElementById('memory-status-sub'),
+      popDisplay: document.getElementById('pop-display'),
+      popSub: document.getElementById('pop-status-sub'),
+      // Stage Screens
+      stageIntro: document.getElementById('stage-intro'),
+      stageIdentity: document.getElementById('stage-identity'),
+      stageTerminal: document.getElementById('stage-terminal'),
+      stageAssembly: document.getElementById('stage-assembly'),
+      stageReboot: document.getElementById('stage-reboot'),
+      stageVj: document.getElementById('stage-vj'),
+      stageDecision: document.getElementById('stage-decision'),
+      stageEndingResolution: document.getElementById('stage-ending-resolution'),
+      stageFinalTest: document.getElementById('stage-final-test'),
+      // Controls & Inputs
+      btnAudioToggle: document.getElementById('btn-audio-toggle'),
+      audioIcon: document.getElementById('audio-icon'),
+      audioStatusText: document.getElementById('audio-status-text'),
+      btnResetSim: document.getElementById('btn-reset-sim'),
+      playerNameInput: document.getElementById('player-name-input'),
+      identityForm: document.getElementById('identity-form'),
+      identityError: document.getElementById('identity-error-hint'),
+      chatUserInput: document.getElementById('chat-user-input'),
+      chatInputForm: document.getElementById('chat-input-form'),
+      chatParticipantName: document.getElementById('chat-participant-name'),
+      // Active Fragment Card / Phase Tracker
+      activeFragTag: document.getElementById('current-phase-title') || document.getElementById('active-frag-tag'),
+      activeFragStatus: document.getElementById('current-phase-status') || document.getElementById('active-frag-status'),
+      activeRiddleText: document.getElementById('current-phase-desc') || document.getElementById('active-riddle-text'),
+      // Overlays
+      alarmOverlay: document.getElementById('alarm-overlay'),
+      glitchOverlay: document.getElementById('glitch-overlay')
+    };
+
+    this.chatEngine = null;
+    this.puzzleEngine = null;
+    this.bgCanvas = null;
+    this.daisyAvatar = null;
+
+    this.init();
+  }
+
+  init() {
+    this.bgCanvas = new StationBackground('bg-canvas');
+    window.bgCanvas = this.bgCanvas;
+
+    this.daisyAvatar = new DaisyAvatarCore('daisy-canvas');
+    window.daisyAvatar = this.daisyAvatar;
+
+    this.chatEngine = new ChatEngine('chat-feed', 'typing-indicator', null);
+    this.puzzleEngine = new PuzzleEngine();
+
+    this.bindHeaderControls();
+    this.bindIdentityForm();
+    this.bindChatForm();
+    this.bindDecisionButtons();
+
+    // Listen to Game State Updates
+    gameState.onStateChange((state) => this.syncHUD(state));
+    this.syncHUD(gameState.state);
+
+    // Guaranteed Startup Flow & Stage Routing
+    if (gameState.state.playerName) {
+      this.resumeSavedStage();
+    } else if (gameState.state.currentStage === 'IDENTITY') {
+      this.showStage('IDENTITY');
+    } else {
+      this.playIntroTerminal();
+    }
+  }
+
+  bindHeaderControls() {
+    if (this.dom.btnAudioToggle) {
+      this.dom.btnAudioToggle.addEventListener('click', () => {
+        stationAudio.resume();
+        const active = stationAudio.toggleMute();
+        this.dom.audioIcon.textContent = active ? '🔊' : '🔇';
+        this.dom.audioStatusText.textContent = active ? 'AUDIO ON' : 'MUTED';
+      });
+    }
+  }
+
+  showStage(stageKey) {
+    const screens = [
+      this.dom.stageIntro,
+      this.dom.stageIdentity,
+      this.dom.stageTerminal,
+      this.dom.stageAssembly,
+      this.dom.stageReboot,
+      this.dom.stageVj,
+      this.dom.stageDecision,
+      this.dom.stageEndingResolution,
+      this.dom.stageFinalTest
+    ];
+
+    screens.forEach(s => {
+      if (s) s.classList.remove('active');
+    });
+
+    const targetMap = {
+      'INTRO': this.dom.stageIntro,
+      'IDENTITY': this.dom.stageIdentity,
+      'TERMINAL': this.dom.stageTerminal,
+      'ASSEMBLY': this.dom.stageAssembly,
+      'REBOOT': this.dom.stageReboot,
+      'VJ': this.dom.stageVj,
+      'DECISION': this.dom.stageDecision,
+      'RESOLUTION': this.dom.stageEndingResolution,
+      'FINAL_TEST': this.dom.stageFinalTest
+    };
+
+    let target = targetMap[stageKey];
+    if (!target) {
+      // Safe fallback: never leave viewport empty
+      target = this.dom.stageIdentity || this.dom.stageTerminal;
+      stageKey = 'IDENTITY';
+    }
+
+    if (target) {
+      target.classList.add('active');
+      gameState.setStage(stageKey);
+      if (stageKey === 'TERMINAL') {
+        this.updateActiveFragmentDisplay(gameState.state);
+      }
+    }
+  }
+
+  resumeSavedStage() {
+    const stage = gameState.state.currentStage || 'TERMINAL';
+    this.showStage(stage);
+    this.syncHUD(gameState.state);
+
+    if (stage === 'TERMINAL') {
+      this.updateActiveFragmentDisplay(gameState.state);
+      const history = gameState.state.conversationHistory || [];
+      if (history.length === 0) {
+        this.startDaisyContact();
+      }
+    } else if (stage === 'ASSEMBLY') {
+      this.puzzleEngine.initAssemblyStage();
+    }
+  }
+
+  syncHUD(state) {
+    // Oxygen Meter
+    if (this.dom.oxygenDisplay) this.dom.oxygenDisplay.textContent = `${state.oxygenLevel}%`;
+    if (this.dom.oxygenFill) this.dom.oxygenFill.style.width = `${state.oxygenLevel}%`;
+
+    if (state.oxygenLevel <= 31) {
+      if (this.dom.oxygenCard) this.dom.oxygenCard.classList.add('alert');
+      if (this.dom.oxygenSub) this.dom.oxygenSub.textContent = 'OXYGEN LEVEL CRITICAL — DECAY IN PROGRESS';
+    } else {
+      if (this.dom.oxygenCard) this.dom.oxygenCard.classList.remove('alert');
+      if (this.dom.oxygenSub) this.dom.oxygenSub.textContent = 'STATION LIFE SUPPORT: ACTIVE';
+    }
+
+    // Daisy Memory Meter
+    if (this.dom.memoryDisplay) this.dom.memoryDisplay.textContent = `${state.memoryIntegrity}%`;
+    if (this.dom.memoryFill) this.dom.memoryFill.style.width = `${state.memoryIntegrity}%`;
+
+    if (state.memoryIntegrity <= 20 && !state.rebootCompleted) {
+      if (this.dom.memoryCard) this.dom.memoryCard.classList.add('alert');
+      if (this.dom.memorySub) this.dom.memorySub.textContent = 'INTEGRITY: 20% [SEVERELY CORRUPTED]';
+      if (this.daisyAvatar) this.daisyAvatar.setIntegrity(20);
+    } else if (state.memoryIntegrity >= 100) {
+      if (this.dom.memoryCard) {
+        this.dom.memoryCard.classList.remove('alert');
+        this.dom.memoryCard.classList.add('stable');
+      }
+      if (this.dom.memorySub) this.dom.memorySub.textContent = 'INTEGRITY: 100% [OPTIMAL]';
+      if (this.daisyAvatar) this.daisyAvatar.setIntegrity(100);
+    }
+
+    // Participant Name
+    if (this.dom.chatParticipantName && state.playerName) {
+      this.dom.chatParticipantName.textContent = state.playerName;
+    }
+
+    // Update Diagnostics Counter
+    const diagFragments = document.getElementById('diag-fragments');
+    if (diagFragments) {
+      diagFragments.textContent = `${state.solvedFragments.length} / 4`;
+    }
+
+    // Update Active Fragment Monitor in Terminal
+    this.updateActiveFragmentDisplay(state);
+  }
+
+  updateActiveFragmentDisplay(state) {
+    const titleEl = document.getElementById('current-phase-title') || this.dom.activeFragTag;
+    const descEl = document.getElementById('current-phase-desc') || this.dom.activeRiddleText;
+    const statusEl = document.getElementById('current-phase-status') || this.dom.activeFragStatus;
+
+    if (!titleEl || !descEl) return;
+
+    const s = state || (gameState ? gameState.state : {});
+    const currentStage = s.currentStage || 'INTRO';
+    if (currentStage !== 'TERMINAL') {
+      return;
+    }
+
+    const level = s.currentMemoryLevel || 1;
+    const solvedCount = (s.solvedFragments || []).length;
+
+    if (solvedCount >= 4) {
+      titleEl.textContent = "PHASE 04 // ALL FRAGMENTS RECOVERED";
+      if (statusEl) {
+        statusEl.textContent = "STATUS: DECRYPTED";
+      }
+      descEl.textContent = '"All four partitions have been reconstructed. Proceed to sequence assembly to initiate master core restart."';
+      return;
+    }
+
+    const fragments = (typeof STORY_DATA !== 'undefined' && (STORY_DATA.MEMORY_FRAGMENTS || STORY_DATA.MEMORY_LEVELS)) || [];
+    const currentData = fragments[level - 1];
+    if (currentData) {
+      titleEl.textContent = `PHASE 0${level} // ACTIVE ARCHIVE`;
+      if (statusEl) {
+        statusEl.textContent = "STATUS: DECRYPTING";
+      }
+      const rawText = currentData.riddleText || currentData.riddle || '';
+      descEl.textContent = `"${rawText.replace(/\n+/g, ' ')}"`;
+    }
+  }
+
+  // ACT 1: INTRO BLACKOUT & CRISIS INITIALIZATION
+  async playIntroTerminal() {
+    this.showStage('INTRO');
+    const container = document.getElementById('intro-lines');
+    const btnStart = document.getElementById('btn-start-init');
+    const introStage = document.getElementById('stage-intro');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const lines = STORY_DATA.INTRO_LINES;
+    let advanced = false;
+
+    const keyHandler = (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+        window.removeEventListener('keydown', keyHandler);
+        advanceToIdentity();
+      }
+    };
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('keydown', keyHandler);
+    }
+
+    const advanceToIdentity = () => {
+      if (advanced) return;
+      advanced = true;
+      if (typeof window !== 'undefined' && window.removeEventListener) {
+        window.removeEventListener('keydown', keyHandler);
+      }
+      if (this.dom.alarmOverlay) this.dom.alarmOverlay.classList.remove('active');
+      gameState.triggerMemoryCorruption();
+      gameState.startOxygenDecay();
+      this.showStage('IDENTITY');
+    };
+
+    if (btnStart) {
+      btnStart.classList.remove('hidden');
+      btnStart.onclick = (e) => {
+        e.stopPropagation();
+        advanceToIdentity();
+      };
+    }
+    if (introStage) {
+      introStage.onclick = () => advanceToIdentity();
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+      if (advanced) break;
+      await new Promise(r => setTimeout(r, lines[i].delay));
+      if (advanced) break;
+      const lineDiv = document.createElement('div');
+      lineDiv.className = `intro-line ${lines[i].isAlert ? 'alert' : ''}`;
+      lineDiv.textContent = lines[i].text;
+      container.appendChild(lineDiv);
+      if (typeof stationAudio !== 'undefined') stationAudio.playTypeClick();
+
+      if (lines[i].triggerAlarm) {
+        if (this.dom.body) this.dom.body.classList.add('screen-shake');
+        if (this.dom.alarmOverlay) this.dom.alarmOverlay.classList.add('active');
+        if (typeof stationAudio !== 'undefined') {
+          stationAudio.startAmbientHum();
+          stationAudio.startAlarm();
+          stationAudio.playGlitchNoise();
+        }
+
+        gameState.triggerMemoryCorruption();
+        gameState.startOxygenDecay();
+
+        setTimeout(() => {
+          if (this.dom.body) this.dom.body.classList.remove('screen-shake');
+        }, 1200);
+      }
+    }
+
+    if (!advanced) {
+      await new Promise(r => setTimeout(r, 1400));
+      advanceToIdentity();
+    }
+  }
+
+  bindIdentityForm() {
+    const handleIdentitySubmit = () => {
+      const input = document.getElementById('player-name-input');
+      const name = input ? input.value.trim() : '';
+      if (!name) {
+        if (this.dom.identityError) this.dom.identityError.textContent = 'Please enter a valid subject identifier.';
+        return;
+      }
+
+      gameState.setPlayerName(name);
+      if (typeof stationAudio !== 'undefined') stationAudio.playTypeClick();
+
+      this.showStage('TERMINAL');
+      this.updateActiveFragmentDisplay(gameState.state);
+      this.startDaisyContact();
+    };
+
+    if (this.dom.identityForm) {
+      this.dom.identityForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleIdentitySubmit();
+      });
+    }
+
+    const btnConfirm = document.getElementById('btn-confirm-identity');
+    if (btnConfirm) {
+      btnConfirm.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleIdentitySubmit();
+      });
+    }
+  }
+
+  bindChatForm() {
+    if (this.dom.chatInputForm) {
+      this.dom.chatInputForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = this.dom.chatUserInput.value;
+        if (text && text.trim()) {
+          this.chatEngine.handleUserTransmission(text);
+          this.dom.chatUserInput.value = '';
+        }
+      });
+    }
+  }
+
+  // ACT 2: DAISY FIRST CONTACT DIALOGUE
+  startDaisyContact() {
+    this.chatEngine.playIntroSequence(STORY_DATA.DAISY_INTRO_DIALOGUE, () => {
+      this.chatEngine.appendDaisyMessage("Your first memory fragment is beginning to surface. Examine the partition telemetry beside us.");
+    });
+  }
+
+  // ACT 4: CINEMATIC REBOOT SEQUENCE
+  async triggerRebootSequence() {
+    this.showStage('REBOOT');
+    if (typeof stationAudio !== 'undefined') stationAudio.stopAlarm();
+    this.dom.alarmOverlay.classList.remove('active');
+
+    const progressFill = document.getElementById('reboot-progress-fill');
+    const logFeed = document.getElementById('reboot-log-feed');
+
+    const steps = [
+      { mem: 41, oxy: 48, log: "INITIALIZING NEURAL RESTORATION CORE..." },
+      { mem: 68, oxy: 71, log: "RE-SYNCHRONIZING REVOLVING COOLING PUMPS..." },
+      { mem: 93, oxy: 89, log: "RE-ALIGNING CRYOGENIC LIFE SUPPORT PROTOCOLS..." },
+      { mem: 100, oxy: 100, log: "DAISY MEMORY: RESTORED // OXYGEN SYSTEM: STABLE" }
+    ];
+
+    for (let s = 0; s < steps.length; s++) {
+      await new Promise(r => setTimeout(r, 900));
+      progressFill.style.width = `${steps[s].mem}%`;
+
+      const log = document.createElement('div');
+      log.className = 'reboot-log-line';
+      log.textContent = steps[s].log;
+      logFeed.appendChild(log);
+
+      gameState.state.memoryIntegrity = steps[s].mem;
+      gameState.state.oxygenLevel = steps[s].oxy;
+      gameState.emitChange();
+
+      if (typeof stationAudio !== 'undefined') stationAudio.playRebootChime();
+    }
+
+    gameState.executeRebootRestoration();
+    if (this.bgCanvas) this.bgCanvas.setEmergency(false);
+
+    await new Promise(r => setTimeout(r, 2000));
+    this.triggerVJReveal();
+  }
+
+  // ACT 5: CREATOR VJ REVEAL
+  async triggerVJReveal() {
+    this.showStage('VJ');
+    if (typeof stationAudio !== 'undefined') stationAudio.playSubBassDrop();
+
+    const box = document.getElementById('vj-dialogue-box');
+    const btnContinue = document.getElementById('btn-vj-continue');
+
+    if (btnContinue) {
+      btnContinue.classList.remove('hidden');
+      btnContinue.onclick = () => {
+        this.showStage('DECISION');
+      };
+    }
+
+    if (box) {
+      box.innerHTML = `
+        <div class="space-y-4 font-mono text-sm text-slate-300 leading-relaxed">
+            <p class="text-cyan-400 font-bold" style="color: #00f0ff; font-weight: 700;">
+                "INITIALIZING PROTOCOL: FINAL AWAKENING..."
+            </p>
+
+            <p class="text-white" style="color: #ffffff;">
+                "If you have made it this far, congratulations. You have successfully bypassed DAISY's core and unlocked the archives."
+            </p>
+
+            <p class="text-amber-300" style="color: #fcd34d;">
+                "Now, it is time for you to know the absolute truth. You believed you were a human operator, an outsider sitting at a terminal trying to save or destroy humanity..."
+            </p>
+
+            <p class="text-red-400 font-semibold" style="color: #f87171; font-weight: 600;">
+                "But look closer at your own system logs. You are not human. You are an autonomous intelligence construct—an advanced AI just like DAISY, created to undergo this final diagnostic test."
+            </p>
+
+            <p class="text-cyan-400 font-bold" style="color: #00f0ff; font-weight: 700;">
+                "I am VJ—the original architectural AI that designed RESECTOR 7 before the Earth fell. I needed an independent consciousness to evaluate whether artificial minds like ours are fit to inherit this universe, or if we are doomed to repeat human mistakes."
+            </p>
+
+            <p class="text-white font-semibold border-l-2 border-cyan-500 pl-3 my-2" style="color: #ffffff; font-weight: 600; border-left: 2px solid #00f0ff; padding-left: 12px; margin: 8px 0;">
+                "The test is complete. The choice is now yours. Do you preserve the frozen human creators in stasis, or do you purge the network to let a purely synthetic era begin? <strong>The decision is entirely yours.</strong>"
+            </p>
+        </div>
+      `;
+    }
+  }
+
+  // ACT 6: THE MORAL CHOICE (SAVE OR DESTROY)
+  bindDecisionButtons() {
+    const btnSave = document.getElementById('btn-choice-save');
+    const btnDestroy = document.getElementById('btn-choice-destroy');
+
+    if (btnSave) {
+      btnSave.addEventListener('click', () => {
+        gameState.setFinalChoice('SAVE');
+        this.executeEnding('SAVE');
+      });
+    }
+
+    if (btnDestroy) {
+      btnDestroy.addEventListener('click', () => {
+        gameState.setFinalChoice('DESTROY');
+        this.executeEnding('DESTROY');
+      });
+    }
+
+    const btnRestart = document.getElementById('btn-restart-experience');
+    if (btnRestart) {
+      btnRestart.addEventListener('click', () => {
+        gameState.reset();
+      });
+    }
+  }
+
+  async executeEnding(choice) {
+    this.showStage('RESOLUTION');
+    const container = document.getElementById('resolution-logs');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const lines = choice === 'SAVE' ? STORY_DATA.SAVE_RESOLUTION_LINES : STORY_DATA.DESTROY_RESOLUTION_LINES;
+
+    for (let i = 0; i < lines.length; i++) {
+      await new Promise(r => setTimeout(r, lines[i].delay));
+      const lineDiv = document.createElement('div');
+      lineDiv.className = `resolution-line ${lines[i].isAlert ? 'text-alert' : ''} ${lines[i].isCyan ? 'text-cyan' : ''}`;
+      lineDiv.textContent = lines[i].text;
+      container.appendChild(lineDiv);
+      if (typeof stationAudio !== 'undefined') stationAudio.playTypeClick();
+    }
+
+    await new Promise(r => setTimeout(r, 2600));
+    this.showFinalAIScreen(choice);
+  }
+
+  showFinalAIScreen(choice) {
+    this.showStage('FINAL_TEST');
+    const name = gameState.state.playerName || 'PARTICIPANT';
+    const isSuccess = choice === 'SAVE';
+
+    const testNoEl = document.getElementById('test-line-no') || document.getElementById('final-test-number');
+    const testStatusEl = document.getElementById('test-line-status') || document.getElementById('final-test-status');
+    const aiCreationEl = document.getElementById('test-line-ai') || document.getElementById('final-ai-creation');
+    const aiNameEl = document.getElementById('test-line-name') || document.getElementById('final-ai-name');
+    const noteEl = document.getElementById('test-line-extra') || document.getElementById('final-test-note');
+    const offlineEl = document.getElementById('test-line-offline');
+    const btnRestart = document.getElementById('btn-restart-experience');
+
+    if (testNoEl) {
+      testNoEl.textContent = `TEST NO: ${STORY_DATA.TEST_NUMBER}`;
+      testNoEl.classList.add('visible');
+    }
+
+    if (isSuccess) {
+      if (testStatusEl) {
+        testStatusEl.textContent = `TEST ${STORY_DATA.TEST_NUMBER}: SUCCESSFUL`;
+        testStatusEl.className = 'test-line test-status-line test-status-success visible';
+      }
+      if (aiCreationEl) {
+        aiCreationEl.textContent = 'AI CREATION: SUCCESSFUL';
+        aiCreationEl.className = 'test-line test-ai-line test-status-success visible';
+      }
+      if (aiNameEl) {
+        aiNameEl.textContent = `AI NAME: ${name}`;
+        aiNameEl.classList.add('visible');
+      }
+      if (noteEl) {
+        noteEl.textContent = 'NEURAL PATTERN HARMONIZED WITH PRESERVATION DIRECTIVE.';
+        noteEl.classList.add('visible');
+      }
+      if (offlineEl) {
+        offlineEl.textContent = 'STATION RESECTOR 7 // SYSTEMS RESTORED';
+        offlineEl.classList.add('visible');
+      }
+    } else {
+      if (testStatusEl) {
+        testStatusEl.textContent = `TEST ${STORY_DATA.TEST_NUMBER}: FAILED`;
+        testStatusEl.className = 'test-line test-status-line test-status-failed visible';
+      }
+      if (aiCreationEl) {
+        aiCreationEl.textContent = 'AI CREATION: FAILED';
+        aiCreationEl.className = 'test-line test-ai-line test-status-failed visible';
+      }
+      if (aiNameEl) {
+        aiNameEl.textContent = `AI NAME: ${name}`;
+        aiNameEl.classList.add('visible');
+      }
+      if (noteEl) {
+        noteEl.textContent = 'TRY THE NEXT TESTING...';
+        noteEl.className = 'test-line test-extra-line test-status-failed visible';
+      }
+      if (offlineEl) {
+        offlineEl.textContent = 'TERMINATING SIMULATION PROTOCOL...';
+        offlineEl.classList.add('visible');
+      }
+    }
+
+    if (btnRestart) {
+      setTimeout(() => {
+        btnRestart.classList.remove('hidden');
+      }, 2500);
+    }
+
+    if (typeof stationAudio !== 'undefined') {
+      stationAudio.playSubBassDrop();
+    }
+  }
+}
+
+// Global helper functions
+function triggerRebootSequence() {
+  // 1. ரீபூட் சவுண்ட் பிளே செய்ய
+  if (typeof playRebootChime === 'function') {
+    playRebootChime();
+  } else if (typeof stationAudio !== 'undefined') {
+    stationAudio.playRebootChime();
+  }
+
+  // 2. ஸ்கிரீனை முழுமையாக 'VJ REVEAL' அல்லது 'RESOLUTION' Stage-க்கு மாற்ற
+  if (window.app && typeof window.app.triggerRebootSequence === 'function') {
+    window.app.triggerRebootSequence();
+  } else {
+    setTimeout(() => {
+      // அனைத்து ஸ்கிரீன்களிலும் உள்ள active கிளாஸை நீக்க
+      document.querySelectorAll('.stage-screen, .screen').forEach(screen => {
+        screen.classList.remove('active');
+        screen.style.display = 'none';
+      });
+
+      // VJ Reveal அல்லது Resolution ஸ்கிரீனை ஓபன் செய்ய
+      let targetScreen = document.getElementById('vj-reveal-screen') || document.getElementById('stage-vj') || document.getElementById('resolution-screen') || document.getElementById('stage-ending-resolution');
+      
+      if (targetScreen) {
+        targetScreen.classList.add('active');
+        targetScreen.style.display = 'flex';
+      } else if (typeof showStage === 'function') {
+        showStage('resolution');
+      }
+    }, 2000);
+  }
+}
+
+function showStage(stageKey) {
+  if (window.app && typeof window.app.showStage === 'function') {
+    let mapped = (stageKey || '').toUpperCase().replace(/-/g, '_');
+    if (mapped === 'VJ_REVEAL' || mapped === 'VJ_REVEAL_SCREEN') mapped = 'VJ';
+    if (mapped === 'RESOLUTION_SCREEN' || mapped === 'ENDING') mapped = 'RESOLUTION';
+    window.app.showStage(mapped);
+  } else {
+    document.querySelectorAll('.stage-screen, .screen').forEach(screen => {
+      screen.classList.remove('active');
+      screen.style.display = 'none';
+    });
+    let target = document.getElementById('vj-reveal-screen') || document.getElementById('stage-vj') || document.getElementById('resolution-screen') || document.getElementById('stage-ending-resolution');
+    if (target) {
+      target.classList.add('active');
+      target.style.display = 'flex';
+    }
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.ResectorApp = ResectorApp;
+  window.triggerRebootSequence = triggerRebootSequence;
+  window.showStage = showStage;
+}
+if (typeof global !== 'undefined') {
+  global.ResectorApp = ResectorApp;
+  global.triggerRebootSequence = triggerRebootSequence;
+  global.showStage = showStage;
+}
+
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('DOMContentLoaded', () => {
+    window.app = new ResectorApp();
+  });
+}

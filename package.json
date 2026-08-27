@@ -1,0 +1,19 @@
+{
+  "name": "resector-7",
+  "version": "1.0.0",
+  "description": "RESECTOR 7 — Cinematic Interactive Sci-Fi Experience",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "test": "node test_verification.js"
+  },
+  "keywords": [
+    "sci-fi",
+    "interactive",
+    "daisy",
+    "resector-7"
+  ],
+  "author": "RESECTOR 7 Team",
+  "license": "ISC"
+}

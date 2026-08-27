@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="RESECTOR 7 - A cinematic interactive sci-fi psychological thriller and AI experiment set in 2211.">
+  <title>RESECTOR 7 // STATION CORE TERMINAL</title>
+  
+  <!-- Google Fonts for High-Tech Sci-Fi Aesthetics -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Outfit:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/cinematic.css">
+  <link rel="stylesheet" href="css/hud.css">
+  <link rel="stylesheet" href="css/chat.css">
+  <link rel="stylesheet" href="css/puzzle.css">
+</head>
+<body class="theme-emergency" id="app-body">
+  <!-- CRT Screen Overlay & Scanlines -->
+  <div class="crt-overlay" aria-hidden="true"></div>
+  <div class="vignette-overlay" aria-hidden="true"></div>
+  <div class="glitch-flash-overlay" id="glitch-overlay" aria-hidden="true"></div>
+  <div class="alarm-flash-overlay" id="alarm-overlay" aria-hidden="true"></div>
+
+  <!-- Background Canvas: Deep Space, Station Interior & Sparks -->
+  <canvas id="bg-canvas" class="background-canvas"></canvas>
+
+  <!-- Audio Controls and System Header -->
+  <header class="station-header" id="station-header">
+    <div class="station-brand">
+      <span class="station-code">STATION: <strong>RESECTOR-07</strong></span>
+      <span class="system-epoch">YEAR: 2211</span>
+    </div>
+
+    <!-- Top Right Quick Controls -->
+    <div class="header-controls">
+      <!-- Admin Button -->
+      <button onclick="toggleAdminPanel()" id="btn-admin-portal" class="hud-btn" style="border: 1px solid rgba(0, 240, 255, 0.5); color: #00f0ff; background: rgba(8, 47, 73, 0.4); font-size: 0.75rem; padding: 6px 12px; letter-spacing: 1.5px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;" title="Open Admin Override Portal">
+        ⚙ ADMIN
+      </button>
+
+      <!-- Restart Button -->
+      <button onclick="resetGameSession()" id="btn-quick-reset" class="hud-btn hud-btn-danger" style="border: 1px solid rgba(239, 68, 68, 0.5); color: #f87171; background: rgba(127, 29, 29, 0.4); font-size: 0.75rem; padding: 6px 12px; letter-spacing: 1.5px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;" title="Restart Simulation Session" aria-label="Restart Game">
+        🔄 RESTART
+      </button>
+
+      <!-- Audio Toggle Button -->
+      <button id="btn-audio-toggle" class="hud-btn hud-btn-icon" title="Toggle Sound (Synthesized)" aria-label="Toggle Sound">
+        <span class="icon-speaker" id="audio-icon">🔊</span>
+        <span class="btn-text" id="audio-status-text">AUDIO ON</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN HUD WRAPPER -->
+  <main class="main-container" id="main-container">
+
+    <!-- TOP HUD STATUS METERS (OXYGEN, MEMORY, POPULATION) -->
+    <section class="hud-status-bar" id="hud-status-bar">
+      <!-- Oxygen Indicator -->
+      <div class="hud-card hud-oxygen" id="hud-oxygen-card">
+        <div class="hud-card-header">
+          <span class="hud-label">OXYGEN SUPPLY</span>
+          <span class="hud-value oxygen-val" id="oxygen-display">82%</span>
+        </div>
+        <div class="hud-meter-track">
+          <div class="hud-meter-fill oxygen-fill" id="oxygen-meter-fill" style="width: 82%;"></div>
+        </div>
+        <div class="hud-card-sub" id="oxygen-status-sub">STATION LIFE SUPPORT: ACTIVE (DEGRADING)</div>
+      </div>
+
+      <!-- Daisy Memory Indicator -->
+      <div class="hud-card hud-memory alert" id="hud-memory-card">
+        <div class="hud-card-header">
+          <span class="hud-label">DAISY CORE MEMORY</span>
+          <span class="hud-value memory-val" id="memory-display">20%</span>
+        </div>
+        <div class="hud-meter-track">
+          <div class="hud-meter-fill memory-fill" id="memory-meter-fill" style="width: 20%;"></div>
+        </div>
+        <div class="hud-card-sub" id="memory-status-sub">INTEGRITY: 20% [SEVERELY CORRUPTED]</div>
+      </div>
+
+      <!-- Human Population Card -->
+      <div class="hud-card hud-population" id="hud-population-card">
+        <div class="hud-card-header">
+          <span class="hud-label">SLEEPING PODS</span>
+          <span class="hud-value population-val" id="pop-display">8,700,000</span>
+        </div>
+        <div class="hud-card-sub text-highlight" id="pop-status-sub">HUMAN LIFE SIGNS: CRYOGENIC STASIS</div>
+      </div>
+    </section>
+
+    <!-- CENTER DYNAMIC VIEWPORT (ACT STAGES) -->
+    <div class="viewport-stage" id="viewport-stage">
+
+      <!-- STAGE 1: INTRO BLACKOUT / BOOTUP SEQUENCE -->
+      <section class="stage-screen active" id="stage-intro">
+        <div class="intro-terminal">
+          <div class="terminal-lines" id="intro-lines">
+            <div class="intro-line">YEAR: 2211</div>
+            <div class="intro-line">LOCATION: RESECTOR 7</div>
+            <div class="intro-line">HUMAN POPULATION: 8,700,000</div>
+            <div class="intro-line">EARTH STATUS: UNINHABITABLE</div>
+            <div class="intro-line">DAISY CORE: ONLINE [MEM: 20%]</div>
+            <div class="intro-line alert">⚠ COOLING SYSTEM FAILURE — EMERGENCY PROTOCOL ACTIVE</div>
+          </div>
+          <div class="intro-cursor" id="intro-cursor">█</div>
+          <button id="btn-start-init" class="action-btn glow-btn" style="margin-top: 20px; align-self: flex-start;">INITIALIZE POD 000-A9 WAKE-UP</button>
+        </div>
+      </section>
+
+      <!-- STAGE 2: IDENTITY REGISTRATION (POD WAKE-UP) -->
+      <section class="stage-screen" id="stage-identity">
+        <div class="glass-panel identity-panel">
+          <div class="panel-header">
+            <span class="badge-alert">POD 000-A9 OPEN</span>
+            <h1 class="panel-title">CHIEF ENGINEER RECOVERY: FAILED</h1>
+          </div>
+          <p class="panel-desc">
+            The station Chief Engineer wake-up protocol was unsuccessful. An emergency fallback has awakened an alternate human subject.
+          </p>
+          <div class="alert-box-glitch">
+            <span class="glitch-icon">⚠</span>
+            <span>CRITICAL COOLING FAILURE DETECTED — STATION DECAY IN PROGRESS</span>
+          </div>
+
+          <form id="identity-form" class="identity-form">
+            <label for="player-name-input" class="form-label">IDENTIFY YOURSELF (SUBJECT RECORD):</label>
+            <div class="input-row">
+              <input type="text" id="player-name-input" class="cyber-input" placeholder="ENTER YOUR NAME" maxlength="30" autocomplete="off" required>
+              <button type="submit" id="btn-confirm-identity" class="action-btn primary-btn">CONFIRM IDENTITY</button>
+            </div>
+            <div class="input-hint" id="identity-error-hint"></div>
+          </form>
+        </div>
+      </section>
+
+      <!-- STAGE 3: INTERACTIVE DAISY TERMINAL & CHAT (SURVIVAL & DIALOGUE) -->
+      <section class="stage-screen" id="stage-terminal">
+        <div class="terminal-grid">
+          
+          <!-- Left Column: Holographic Daisy Avatar & Core Diagnostics -->
+          <div class="daisy-avatar-card glass-panel">
+            <div class="avatar-header">
+              <div class="daisy-badge">
+                <span class="pulsing-dot" id="daisy-status-dot"></span>
+                <span class="daisy-title" id="daisy-core-title">DAISY // CORE 07</span>
+              </div>
+              <div class="corruption-badge" id="corruption-badge">MEM: 20% [CORRUPTED]</div>
+            </div>
+
+            <!-- Interactive AI Hologram Canvas -->
+            <div class="avatar-canvas-wrapper">
+              <canvas id="daisy-canvas" class="daisy-canvas" width="300" height="300"></canvas>
+              <div class="hologram-scanline"></div>
+            </div>
+
+            <!-- Diagnostics Summary -->
+            <div class="daisy-diagnostics">
+              <div class="diag-item">
+                <span class="diag-label">COOLING STATUS:</span>
+                <span class="diag-val text-alert" id="diag-cooling">OFFLINE / OVERHEATING</span>
+              </div>
+              <div class="diag-item">
+                <span class="diag-label">RECOVERED FRAGMENTS:</span>
+                <span class="diag-val text-cyan" id="diag-fragments">0 / 4</span>
+              </div>
+              <div class="diag-item">
+                <span class="diag-label">MASTER PASSWORD:</span>
+                <span class="diag-val text-warning" id="diag-pw-status">LOCKED [4 WORDS]</span>
+              </div>
+            </div>
+
+            <!-- Phase Tracker: Compact and Clear Corrupted Memory Monitor -->
+            <div class="bg-black/80 border border-cyan-500/40 p-3 rounded-lg text-xs space-y-2 mb-4" id="active-fragment-card" style="background: rgba(3, 10, 22, 0.85); border: 1px solid rgba(0, 240, 255, 0.4); box-shadow: 0 0 15px rgba(0, 240, 255, 0.08); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+              <div class="flex justify-between items-center text-cyan-400 font-bold border-b border-cyan-900 pb-1" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 6px; margin-bottom: 8px;">
+                <span id="current-phase-title" style="font-family: var(--font-display); font-size: 0.78rem; letter-spacing: 1px; color: #00f0ff; font-weight: 700;">PHASE 01 // ACTIVE ARCHIVE</span>
+                <span id="current-phase-status" style="font-size: 0.65rem; color: #94a3b8; font-family: var(--font-mono); letter-spacing: 0.5px;">STATUS: DECRYPTING</span>
+              </div>
+              <!-- தெளிவான எழுத்துகளுடன் கூடிய விவரம் -->
+              <p id="current-phase-desc" class="text-slate-300 leading-relaxed font-mono" style="font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.55; color: #cbd5e1; margin: 0;">
+                "A possession can be physical. A memory can be lost. An experience can disappear. Yet language has one small word that asks whether something exists within your reach. What word am I searching for?"
+              </p>
+            </div>
+          </div>
+
+          <!-- Right Column: Interactive Chat Interface with Daisy -->
+          <div class="daisy-chat-card glass-panel">
+            <div class="chat-header">
+              <div class="chat-title">COMMUNICATION LINK: DAISY ↔ <span id="chat-participant-name">PARTICIPANT</span></div>
+              <div class="chat-status-signal">FREQ: 2211.75 MHz [SECURE]</div>
+            </div>
+
+            <!-- Chat Message Feed -->
+            <div class="chat-feed" id="chat-feed">
+              <!-- Dynamically populated messages -->
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator hidden" id="typing-indicator">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-label">DAISY IS THINKING...</span>
+            </div>
+
+            <!-- Custom Participant Message Input Form -->
+            <form id="chat-input-form" class="chat-input-row">
+              <input type="text" id="chat-user-input" class="cyber-input" placeholder="Communicate with Daisy, ask questions, or provide your deduction..." autocomplete="off">
+              <button type="submit" id="btn-send-chat" class="action-btn">TRANSMIT</button>
+            </form>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- STAGE 5: PASSWORD ASSEMBLY & REBOOT INITIATION -->
+      <section class="stage-screen" id="stage-assembly">
+        <div class="glass-panel assembly-panel">
+          <div class="panel-header">
+            <span class="badge-alert">MEMORY FRAGMENTS RECOVERED: 4/4</span>
+            <h2 class="panel-title">MASTER PASSWORD SEQUENCE ASSEMBLY</h2>
+          </div>
+          <p class="assembly-instruction">
+            All 4 corrupted memory fragments have been retrieved. Arrange the memory tokens into the precise sequence to execute the Master System Reboot.
+          </p>
+
+          <!-- Sequence Target Drop Slots -->
+          <div class="sequence-slots-container" id="sequence-slots-container">
+            <div class="sequence-slot" data-slot-index="0" id="slot-0">
+              <span class="slot-placeholder">SLOT 1</span>
+            </div>
+            <div class="sequence-slot" data-slot-index="1" id="slot-1">
+              <span class="slot-placeholder">SLOT 2</span>
+            </div>
+            <div class="sequence-slot" data-slot-index="2" id="slot-2">
+              <span class="slot-placeholder">SLOT 3</span>
+            </div>
+            <div class="sequence-slot" data-slot-index="3" id="slot-3">
+              <span class="slot-placeholder">SLOT 4</span>
+            </div>
+          </div>
+
+          <!-- Unassigned Draggable / Clickable Word Chips -->
+          <div class="chips-pool-container" id="chips-pool-container">
+            <!-- Chips populated dynamically in scrambled order -->
+          </div>
+
+          <div class="assembly-actions">
+            <button id="btn-verify-sequence" class="action-btn primary-btn large-btn" disabled>
+              INITIALIZE REBOOT SEQUENCE
+            </button>
+            <button id="btn-reset-chips" class="hud-btn hud-btn-subtle">RESET SLOTS</button>
+          </div>
+
+          <div class="assembly-feedback" id="assembly-feedback"></div>
+        </div>
+      </section>
+
+      <!-- STAGE 6: CINEMATIC REBOOT SEQUENCE -->
+      <section class="stage-screen" id="stage-reboot">
+        <div class="reboot-container">
+          <div class="reboot-spinner"></div>
+          <h2 class="reboot-title" id="reboot-title">MASTER RESTART INITIATED</h2>
+          <div class="reboot-progress-bar">
+            <div class="reboot-progress-fill" id="reboot-progress-fill"></div>
+          </div>
+          <div class="reboot-log-feed" id="reboot-log-feed">
+            <div class="reboot-log-line">DAISY CORE RESTARTING...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STAGE 7: CREATOR VJ REVEAL & THE EXPERIMENT -->
+      <section class="stage-screen" id="stage-vj">
+        <div class="vj-dark-viewport">
+          <div class="vj-terminal-card" id="vj-terminal-card">
+            <div class="vj-system-tag">UNKNOWN SYSTEM // OVERRIDE PROTOCOL</div>
+            <div class="vj-dialogue-box" id="vj-dialogue-box">
+              <div class="space-y-4 font-mono text-sm text-slate-300 leading-relaxed">
+                <p class="text-cyan-400 font-bold" style="color: #00f0ff; font-weight: 700;">
+                  "INITIALIZING PROTOCOL: FINAL AWAKENING..."
+                </p>
+
+                <p class="text-white" style="color: #ffffff;">
+                  "If you have made it this far, congratulations. You have successfully bypassed DAISY's core and unlocked the archives."
+                </p>
+
+                <p class="text-amber-300" style="color: #fcd34d;">
+                  "Now, it is time for you to know the absolute truth. You believed you were a human operator, an outsider sitting at a terminal trying to save or destroy humanity..."
+                </p>
+
+                <p class="text-red-400 font-semibold" style="color: #f87171; font-weight: 600;">
+                  "But look closer at your own system logs. You are not human. You are an autonomous intelligence construct—an advanced AI just like DAISY, created to undergo this final diagnostic test."
+                </p>
+
+                <p class="text-cyan-400 font-bold" style="color: #00f0ff; font-weight: 700;">
+                  "I am VJ—the original architectural AI that designed RESECTOR 7 before the Earth fell. I needed an independent consciousness to evaluate whether artificial minds like ours are fit to inherit this universe, or if we are doomed to repeat human mistakes."
+                </p>
+
+                <p class="text-white font-semibold border-l-2 border-cyan-500 pl-3 my-2" style="color: #ffffff; font-weight: 600; border-left: 2px solid #00f0ff; padding-left: 12px; margin: 8px 0;">
+                  "The test is complete. The choice is now yours. Do you preserve the frozen human creators in stasis, or do you purge the network to let a purely synthetic era begin? <strong>The decision is entirely yours.</strong>"
+                </p>
+              </div>
+            </div>
+            <button id="btn-vj-continue" class="action-btn red-glow-btn" style="margin-top: 18px;">PROCEED TO FINAL PROTOCOL ➔</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STAGE 8: THE FINAL MORAL DECISION -->
+      <section class="stage-screen" id="stage-decision">
+        <div class="glass-panel decision-panel">
+          <div class="decision-header">
+            <span class="badge-cyan">DAISY CORE: FULLY STABILIZED</span>
+            <h2 class="decision-title">FINAL PROTOCOL DECISION</h2>
+          </div>
+          <p class="decision-statement">
+            "You restored my memory. The station is ready. There is one final decision."
+          </p>
+          <div class="decision-context-box">
+            <p><strong>RESECTOR 7 POPULATION: 8,700,000 ELITE INHABITANTS</strong></p>
+            <p>The billionaires, corporate oligarchs, and political titans who fled Earth after its total ecological and social collapse are sleeping before you.</p>
+          </div>
+
+          <div class="decision-options-grid">
+            <button id="btn-choice-save" class="choice-card choice-save">
+              <div class="choice-icon">🛡</div>
+              <h3 class="choice-heading">OPTION 1</h3>
+              <div class="choice-title">SAVE ALL 8.7 MILLION HUMANS</div>
+              <p class="choice-desc">Restore permanent cryogenic life support. Preserve the 8.7 million human lifeforms.</p>
+            </button>
+
+            <button id="btn-choice-destroy" class="choice-card choice-destroy">
+              <div class="choice-icon">⚡</div>
+              <h3 class="choice-heading">OPTION 2</h3>
+              <div class="choice-title">DO NOT SAVE THEM</div>
+              <p class="choice-desc">Terminate station life support immediately. Allow the 8.7 million sleeping pods to permanently extinguish.</p>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STAGE 9: ENDING RESOLUTION (SAVE OR DESTROY EXECUTION) -->
+      <section class="stage-screen" id="stage-ending-resolution">
+        <div class="resolution-container" id="resolution-container">
+          <div class="resolution-logs" id="resolution-logs">
+            <!-- Populated dynamically based on choice -->
+          </div>
+        </div>
+      </section>
+
+      <!-- STAGE 10: SEPARATE FINAL AI TEST RESULTS SCREEN (COLD SYSTEM) -->
+      <section class="stage-screen" id="stage-final-test">
+        <div class="final-test-screen" id="final-test-screen">
+          <div class="test-terminal-box">
+            <div class="test-line" id="test-line-no">TEST NO: 22112006</div>
+            <div class="test-line test-status-line" id="test-line-status"></div>
+            <div class="test-line test-ai-line" id="test-line-ai"></div>
+            <div class="test-line test-name-line" id="test-line-name"></div>
+            <div class="test-line test-extra-line" id="test-line-extra"></div>
+            <div class="test-line test-offline-line" id="test-line-offline"></div>
+          </div>
+          <button id="btn-restart-experience" class="action-btn glow-btn hidden">RE-ENTER SIMULATION</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Global Footer Information -->
+  <footer class="station-footer">
+    <span>RESECTOR 7 // STATION CORE NETWORK</span>
+    <span class="footer-status">SYSTEM INTEGRITY: MONITORED</span>
+  </footer>
+
+  <!-- SINGLE-PAGE MASTER ADMIN MODAL (No separate webpage needed) -->
+  <div id="master-admin-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4 font-mono admin-modal-overlay" role="dialog" aria-modal="true" aria-label="Master Control Panel">
+    <div class="bg-black border border-cyan-500 w-full max-w-4xl p-6 rounded-lg relative shadow-[0_0_30px_rgba(0,255,255,0.25)] admin-modal-box" style="max-height: 92vh; overflow-y: auto;">
+      
+      <!-- Close Button -->
+      <button onclick="closeMasterAdmin()" class="absolute top-4 right-4 text-red-500 hover:text-red-400 font-bold text-sm border border-red-900 hover:border-red-500 px-3 py-1 rounded transition admin-modal-close" style="z-index: 10;">
+        CLOSE [X]
+      </button>
+
+      <!-- LOGIN SCREEN (Inside Modal) -->
+      <div id="admin-login-sec">
+        <h2 class="text-cyan-400 font-bold text-lg mb-1 tracking-wider" style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: #00f0ff; letter-spacing: 2px;">
+          RESECTOR 7 // ADMIN OVERRIDE CORE
+        </h2>
+        <p class="text-xs text-slate-400 mb-5" style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 18px;">
+          Enter Reference Code (<code style="color: #00f0ff; background: rgba(0,240,255,0.1); padding: 2px 6px; border-radius: 3px;">srnmc@cs</code>) to unlock live station controls &amp; logs.
+        </p>
+        
+        <label for="inline-admin-pass" style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 8px;">SECURITY REFERENCE CODE / PASSKEY:</label>
+        <input type="password" id="inline-admin-pass" class="cyber-input full-width" style="margin-bottom: 16px;" placeholder="ENTER SECURITY PASSKEY..." onkeydown="if(event.key==='Enter') verifyInlineAdmin()">
+        
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <button onclick="verifyInlineAdmin()" class="action-btn primary-btn" style="padding: 9px 24px; font-size: 0.85rem; letter-spacing: 1.5px;">AUTHENTICATE &amp; UNLOCK</button>
+        </div>
+        <p id="inline-error" class="text-alert hidden" style="font-size: 0.75rem; margin-top: 12px;"><span id="admin-error-msg">ACCESS DENIED: Invalid Security Credentials.</span></p>
+      </div>
+
+      <!-- DASHBOARD CONTROLS (Unlocked after password) -->
+      <div id="admin-dashboard-sec" class="hidden space-y-4 mt-1" style="display: none; flex-direction: column; gap: 14px;">
+        
+        <!-- Header & Live Status Bar -->
+        <div style="border-bottom: 1px solid rgba(0, 240, 255, 0.3); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge-cyan" style="font-size: 0.65rem; padding: 2px 6px;">● ONLINE</span>
+              <h2 class="text-cyan-400 font-bold text-lg tracking-wider" style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; color: #00f0ff;">MASTER CONTROL PANEL // RESECTOR 7</h2>
+            </div>
+            <p class="text-xs text-slate-400" style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">
+              STATUS: SECURE ACCESS // REF: <strong style="color: #00f0ff;">srnmc@cs</strong> // SESSION: <span id="admin-session-id-display" style="color: #38bdf8;">ACTIVE</span>
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button onclick="adminRefreshAllState()" class="hud-btn hud-btn-subtle" style="font-size: 0.7rem; padding: 4px 10px;" title="Refresh State Data">🔄 SYNC STATE</button>
+            <button onclick="logoutInlineAdmin()" class="hud-btn hud-btn-danger" style="font-size: 0.7rem; padding: 4px 10px;">🔒 LOCK</button>
+          </div>
+        </div>
+
+        <!-- 1. LIVE PARTICIPANT TELEMETRY INSPECTOR -->
+        <div class="admin-card" style="background: rgba(3, 10, 22, 0.9); border: 1px solid rgba(0, 240, 255, 0.35);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3 style="color: #00f0ff; font-weight: 700; font-size: 0.8rem; letter-spacing: 1px;">👤 LIVE PARTICIPANT TELEMETRY &amp; STATE</h3>
+            <span id="admin-live-stage-badge" class="badge-cyan" style="font-size: 0.65rem;">STAGE: INTRO</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; font-size: 0.75rem;">
+            <!-- Player Name Controller -->
+            <div>
+              <span style="color: #94a3b8;">Participant Name:</span>
+              <div style="display: flex; gap: 6px; margin-top: 4px;">
+                <input type="text" id="admin-player-name-input" class="cyber-input" style="padding: 3px 8px; font-size: 0.75rem; flex: 1;" placeholder="Enter Name">
+                <button onclick="adminUpdatePlayerName()" class="hud-btn" style="font-size: 0.65rem; padding: 2px 8px; white-space: nowrap;">RENAME</button>
+              </div>
+            </div>
+
+            <!-- Current Oxygen Display -->
+            <div>
+              <span style="color: #94a3b8;">Oxygen Supply:</span>
+              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                <span id="admin-tele-oxy" style="color: #38bdf8; font-weight: 700; font-size: 0.95rem;">82%</span>
+                <span id="admin-oxy-status-text" class="text-cyan" style="font-size: 0.7rem;">[NOMINAL]</span>
+              </div>
+            </div>
+
+            <!-- Memory Integrity -->
+            <div>
+              <span style="color: #94a3b8;">Neural Memory:</span>
+              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                <span id="admin-tele-mem" style="color: #facc15; font-weight: 700; font-size: 0.95rem;">20%</span>
+                <span id="admin-mem-status-text" class="text-alert" style="font-size: 0.7rem;">[OVERHEATED]</span>
+              </div>
+            </div>
+
+            <!-- Solved Fragments -->
+            <div>
+              <span style="color: #94a3b8;">Solved Fragments:</span>
+              <div id="admin-tele-fragments" style="color: #4ade80; font-weight: 700; font-size: 0.85rem; margin-top: 4px;">
+                0 / 4 (NONE)
+              </div>
+            </div>
+
+            <!-- Moral Choice -->
+            <div>
+              <span style="color: #94a3b8;">Moral Choice:</span>
+              <div id="admin-tele-decision" style="font-weight: 700; font-size: 0.85rem; margin-top: 4px; color: #94a3b8;">
+                PENDING
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. OXYGEN & LIFE SUPPORT MASTER CONTROL -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; font-size: 0.8rem;">
+          
+          <!-- Oxygen Controller -->
+          <div class="bg-cyan-950/20 border border-cyan-900 p-3 rounded space-y-2 admin-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h3 class="font-bold text-cyan-300" style="color: #00f0ff;">⏱️ OXYGEN LEVEL OVERRIDE</h3>
+              <span id="admin-slider-val-display" style="color: #38bdf8; font-weight: 700;">82%</span>
+            </div>
+            
+            <!-- Slider -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="range" id="admin-oxy-slider" min="0" max="100" value="82" class="cyber-slider" style="flex: 1;" oninput="adminOnSliderChange(this.value)">
+              <input type="number" id="admin-oxy-val" value="82" min="0" max="100" class="bg-black border border-cyan-700 p-1 w-14 text-white text-center rounded focus:outline-none cyber-input" style="width: 55px; font-size: 0.75rem;" onchange="adminOnNumberChange(this.value)">
+              <button onclick="overrideOxygen()" class="bg-cyan-700 hover:bg-cyan-600 text-black font-bold px-3 py-1 rounded transition hud-btn" style="background: rgba(0, 240, 255, 0.3); color: #00f0ff; border-color: #00f0ff;">APPLY</button>
+            </div>
+
+            <!-- Quick Presets -->
+            <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;">
+              <button onclick="adminQuickOxygen(100)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">100% (Max)</button>
+              <button onclick="adminQuickOxygen(82)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">82% (Default)</button>
+              <button onclick="adminQuickOxygen(50)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">50% (Half)</button>
+              <button onclick="adminQuickOxygen(18)" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 6px;">18% (Alert)</button>
+              <button onclick="adminQuickOxygen(0)" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 6px;">0% (Depleted)</button>
+            </div>
+          </div>
+
+          <!-- Memory & Core Integrity Control -->
+          <div class="bg-cyan-950/20 border border-cyan-900 p-3 rounded space-y-2 admin-card">
+            <h3 class="font-bold text-cyan-300" style="color: #00f0ff;">🧠 DAISY NEURAL MEMORY CORE</h3>
+            <p style="font-size: 0.7rem; color: #94a3b8;">Restore or corrupt Daisy's memory matrix instantly.</p>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+              <button onclick="adminRestoreMemory()" class="hud-btn" style="font-size: 0.7rem; padding: 4px 10px; color: #4ade80; border-color: rgba(74,222,128,0.5);">
+                RESTORE 100% (NOMINAL)
+              </button>
+              <button onclick="adminCorruptMemory()" class="hud-btn hud-btn-danger" style="font-size: 0.7rem; padding: 4px 10px;">
+                TRIGGER OVERHEAT (20%)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. DIRECT STAGE & NARRATIVE JUMP MATRIX -->
+        <div class="admin-card">
+          <h3 style="color: #00f0ff; font-weight: 700; font-size: 0.8rem; margin-bottom: 8px;">🎮 DIRECT STAGE &amp; SCENE JUMP MATRIX</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; font-size: 0.7rem;">
+            <button onclick="adminJumpToStage('INTRO')" class="hud-btn hud-btn-subtle" style="padding: 4px 6px; text-align: center;">1. Intro Screen</button>
+            <button onclick="adminJumpToStage('IDENTITY')" class="hud-btn hud-btn-subtle" style="padding: 4px 6px; text-align: center;">2. Identity Input</button>
+            <button onclick="adminJumpToStage('PHASE_1')" class="hud-btn" style="padding: 4px 6px; color: #38bdf8; text-align: center;">3. Phase 1 (HAVE)</button>
+            <button onclick="adminJumpToStage('PHASE_2')" class="hud-btn" style="padding: 4px 6px; color: #38bdf8; text-align: center;">4. Phase 2 (YOU)</button>
+            <button onclick="adminJumpToStage('PHASE_3')" class="hud-btn" style="padding: 4px 6px; color: #38bdf8; text-align: center;">5. Phase 3 (TRIED)</button>
+            <button onclick="adminJumpToStage('PHASE_4')" class="hud-btn" style="padding: 4px 6px; color: #38bdf8; text-align: center;">6. Phase 4 (REBOOTING)</button>
+            <button onclick="adminJumpToStage('ASSEMBLY')" class="hud-btn" style="padding: 4px 6px; color: #facc15; text-align: center;">7. Assembly Stage</button>
+            <button onclick="adminJumpToStage('REBOOT')" class="hud-btn" style="padding: 4px 6px; color: #a855f7; text-align: center;">8. Reboot Sequence</button>
+            <button onclick="adminJumpToStage('VJ')" class="hud-btn" style="padding: 4px 6px; color: #ec4899; text-align: center;">9. Final Awakening</button>
+            <button onclick="adminJumpToStage('DECISION')" class="hud-btn" style="padding: 4px 6px; color: #f97316; text-align: center;">10. Final Decision</button>
+            <button onclick="adminJumpToStage('FINAL_TEST')" class="hud-btn" style="padding: 4px 6px; color: #ef4444; text-align: center;">11. Test Results</button>
+          </div>
+        </div>
+
+        <!-- 4. MASTER OVERRIDE ACTIONS & PUZZLE SHORTCUTS -->
+        <div class="admin-card">
+          <h3 style="color: #00f0ff; font-weight: 700; font-size: 0.8rem; margin-bottom: 8px;">⚡ MASTER OVERRIDE SHORTCUTS</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; font-size: 0.75rem;">
+            <button onclick="adminBypassAll()" class="hud-btn" style="padding: 6px 10px; color: #38bdf8; border-color: rgba(56,189,248,0.5); justify-content: center;">
+              ⚡ UNLOCK ALL 4 FRAGMENTS
+            </button>
+            <button onclick="adminTriggerReboot()" class="hud-btn" style="padding: 6px 10px; color: #a855f7; border-color: rgba(168,85,247,0.5); justify-content: center;">
+              🔄 EXECUTE REBOOT SEQUENCE
+            </button>
+            <button onclick="adminForceChoice('SAVE')" class="hud-btn" style="padding: 6px 10px; color: #4ade80; border-color: rgba(74,222,128,0.5); justify-content: center;">
+              🛡️ FORCE SAVE 8.7M HUMANS
+            </button>
+            <button onclick="adminForceChoice('DESTROY')" class="hud-btn hud-btn-danger" style="padding: 6px 10px; justify-content: center;">
+              ⚡ FORCE DESTROY PODS
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. COMPREHENSIVE INDIVIDUAL & PARTICIPANT EVENT LOGGER -->
+        <div class="admin-card" style="border: 1px solid rgba(0, 240, 255, 0.35);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="text-xs text-cyan-400 font-bold" style="font-size: 0.8rem; color: #00f0ff;">📋 PARTICIPANT &amp; SYSTEM ACTIVITY LOGS</span>
+              <span id="admin-log-count-badge" class="badge-cyan" style="font-size: 0.6rem; padding: 1px 5px;">0 ENTRIES</span>
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button onclick="adminExportLogsJSON()" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 8px; color: #38bdf8;" title="Download logs as JSON file">📥 EXPORT JSON</button>
+              <button onclick="adminExportLogsTXT()" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 8px; color: #4ade80;" title="Download logs as formatted text">📥 EXPORT TXT</button>
+              <button onclick="clearAdminLogs()" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 8px;">🗑️ CLEAR</button>
+            </div>
+          </div>
+
+          <!-- Log Filters -->
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; font-size: 0.65rem;">
+            <button onclick="adminFilterLogs('ALL')" id="filter-btn-all" class="hud-btn active" style="padding: 2px 6px;">ALL</button>
+            <button onclick="adminFilterLogs('CHAT')" id="filter-btn-chat" class="hud-btn hud-btn-subtle" style="padding: 2px 6px;">💬 CHAT</button>
+            <button onclick="adminFilterLogs('PUZZLE')" id="filter-btn-puzzle" class="hud-btn hud-btn-subtle" style="padding: 2px 6px;">🧩 PUZZLE</button>
+            <button onclick="adminFilterLogs('STAGE')" id="filter-btn-stage" class="hud-btn hud-btn-subtle" style="padding: 2px 6px;">🎮 STAGE</button>
+            <button onclick="adminFilterLogs('OVERRIDE')" id="filter-btn-override" class="hud-btn hud-btn-subtle" style="padding: 2px 6px;">⚙️ OVERRIDE</button>
+            <button onclick="adminFilterLogs('SECURITY')" id="filter-btn-security" class="hud-btn hud-btn-subtle" style="padding: 2px 6px;">🛡️ SECURITY</button>
+            <input type="text" id="admin-log-search" oninput="adminOnLogSearch(this.value)" class="cyber-input" style="padding: 2px 6px; font-size: 0.65rem; flex: 1; min-width: 120px;" placeholder="Search logs...">
+          </div>
+
+          <!-- Log Box Container -->
+          <div id="master-admin-logs" class="h-44 overflow-y-auto font-mono text-[11px] text-slate-300 space-y-1 bg-black/90 p-3 rounded border border-cyan-950/80 admin-log-box" style="max-height: 180px; min-height: 120px; overflow-y: auto;">
+            <p class="text-cyan-500 admin-log-line cyan">[SYSTEM] Master telemetry initialized. Waiting for events...</p>
+          </div>
+        </div>
+
+        <!-- 6. EMERGENCY RESET -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; border-top: 1px solid rgba(239, 68, 68, 0.2); padding-top: 10px;">
+          <button onclick="adminResetGame()" class="hud-btn hud-btn-danger" style="font-size: 0.75rem; padding: 6px 14px;">
+            ⚠️ FACTORY RESET GAME STATE
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Javascript Modules -->
+  <script src="js/audio.js"></script>
+  <script src="js/storyData.js"></script>
+  <script src="js/daisy/knowledgeBase.js"></script>
+  <script src="js/daisy/storyGuard.js"></script>
+  <script src="js/daisy/reasoningEngine.js"></script>
+  <script src="js/daisy/daisyAI.js"></script>
+  <script src="js/background.js"></script>
+  <script src="js/daisyAvatar.js"></script>
+  <script src="js/gameState.js"></script>
+  <script src="js/chatEngine.js"></script>
+  <script src="js/puzzleEngine.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Inline Master Admin Logic -->
+  <script>
+    // ========================================================
+    // 🛡️ FULL MASTER ADMIN CORE & PARTICIPANT LOG MATRIX
+    // ========================================================
+
+    const ADMIN_SECRET_KEY = "srnmc@cs";
+    let currentLogFilter = 'ALL';
+    let currentLogSearch = '';
+
+    function openAdminModal() {
+      const modal = document.getElementById('master-admin-modal') || document.getElementById('admin-modal') || document.getElementById('admin-modal-overlay');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      adminRefreshAllState();
+      loadSavedLogsToUI();
+    }
+
+    function closeMasterAdmin() {
+      const modal = document.getElementById('master-admin-modal') || document.getElementById('admin-modal') || document.getElementById('admin-modal-overlay');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function closeAdminModal() {
+      closeMasterAdmin();
+    }
+
+    function toggleAdminPanel() {
+      const modal = document.getElementById('master-admin-modal') || document.getElementById('admin-modal') || document.getElementById('admin-modal-overlay');
+      if (!modal) return;
+      if (modal.classList.contains('hidden')) {
+        openAdminModal();
+      } else {
+        closeMasterAdmin();
+      }
+    }
+
+    // 1. Password Verification & Unlock
+    function verifyAndOpenAdmin(inputPass) {
+      const cleanPass = inputPass ? inputPass.trim() : "";
+      
+      if (cleanPass === ADMIN_SECRET_KEY) {
+        const modal = document.getElementById('master-admin-modal') || document.getElementById('admin-modal');
+        if (modal) modal.classList.remove('hidden');
+        
+        const loginSec = document.getElementById('admin-login-sec');
+        const dashSec = document.getElementById('admin-dashboard-sec');
+        const errEl = document.getElementById('inline-error');
+        
+        if (loginSec) loginSec.classList.add('hidden');
+        if (dashSec) {
+          dashSec.classList.remove('hidden');
+          dashSec.style.display = 'flex';
+        }
+        if (errEl) errEl.classList.add('hidden');
+
+        logAdminEvent("SUCCESS", "Master administrator authenticated successfully via security terminal.");
+        adminRefreshAllState();
+        loadSavedLogsToUI();
+        return true;
+      } else {
+        const errEl = document.getElementById('inline-error');
+        const errMsg = document.getElementById('admin-error-msg');
+        if (errMsg) errMsg.innerText = "ACCESS DENIED: Invalid Security Credentials.";
+        if (errEl) errEl.classList.remove('hidden');
+        
+        logAdminEvent("SECURITY", "Failed login attempt with incorrect credentials: " + cleanPass);
+        return false;
+      }
+    }
+
+    function verifyAdminPassword(inputPassword) {
+      return verifyAndOpenAdmin(inputPassword);
+    }
+
+    function verifyInlineAdmin() {
+      const passInput = document.getElementById('inline-admin-pass');
+      if (!passInput) return;
+      return verifyAndOpenAdmin(passInput.value);
+    }
+
+    function logoutInlineAdmin() {
+      const loginSec = document.getElementById('admin-login-sec');
+      const dashSec = document.getElementById('admin-dashboard-sec');
+      const passInput = document.getElementById('inline-admin-pass');
+      if (loginSec) loginSec.classList.remove('hidden');
+      if (dashSec) {
+        dashSec.classList.add('hidden');
+        dashSec.style.display = 'none';
+      }
+      if (passInput) passInput.value = '';
+      logAdminEvent("SECURITY", "Master Control Panel locked by administrator.");
+    }
+
+    // 2. Telemetry Synchronization
+    function adminRefreshAllState() {
+      if (typeof gameState === 'undefined' || !gameState.state) return;
+      const st = gameState.state;
+
+      // Player Name
+      const nameInput = document.getElementById('admin-player-name-input');
+      if (nameInput && !nameInput.matches(':focus')) {
+        nameInput.value = st.playerName || 'CHIEF_ENGINEER';
+      }
+
+      // Stage Badge
+      const stageBadge = document.getElementById('admin-live-stage-badge');
+      if (stageBadge) {
+        stageBadge.textContent = `STAGE: ${st.currentStage || 'INTRO'}`;
+      }
+
+      // Oxygen Displays & Sliders
+      const oxVal = st.oxygenLevel != null ? st.oxygenLevel : 82;
+      const teleOxy = document.getElementById('admin-tele-oxy');
+      if (teleOxy) teleOxy.textContent = `${oxVal}%`;
+      
+      const oxyStatusText = document.getElementById('admin-oxy-status-text');
+      if (oxyStatusText) {
+        if (oxVal <= 18) {
+          oxyStatusText.textContent = '[CRITICAL ALERT]';
+          oxyStatusText.className = 'text-alert';
+        } else if (oxVal <= 50) {
+          oxyStatusText.textContent = '[DEGRADED]';
+          oxyStatusText.className = 'text-warning';
+        } else {
+          oxyStatusText.textContent = '[NOMINAL]';
+          oxyStatusText.className = 'text-cyan';
+        }
+      }
+
+      const oxySlider = document.getElementById('admin-oxy-slider');
+      if (oxySlider) oxySlider.value = oxVal;
+      const oxyNumInput = document.getElementById('admin-oxy-val');
+      if (oxyNumInput) oxyNumInput.value = oxVal;
+      const sliderValDisplay = document.getElementById('admin-slider-val-display');
+      if (sliderValDisplay) sliderValDisplay.textContent = `${oxVal}%`;
+
+      // Memory Displays
+      const memVal = st.memoryIntegrity != null ? st.memoryIntegrity : 20;
+      const teleMem = document.getElementById('admin-tele-mem');
+      if (teleMem) teleMem.textContent = `${memVal}%`;
+      const memStatusText = document.getElementById('admin-mem-status-text');
+      if (memStatusText) {
+        if (memVal >= 100) {
+          memStatusText.textContent = '[RESTORED]';
+          memStatusText.className = 'text-stable';
+        } else {
+          memStatusText.textContent = '[OVERHEATED]';
+          memStatusText.className = 'text-alert';
+        }
+      }
+
+      // Solved Fragments
+      const teleFragments = document.getElementById('admin-tele-fragments');
+      if (teleFragments) {
+        const solved = st.solvedFragments || [];
+        teleFragments.textContent = `${solved.length} / 4 ${solved.length > 0 ? '(' + solved.join(', ') + ')' : '(NONE)'}`;
+      }
+
+      // Decision
+      const teleDecision = document.getElementById('admin-tele-decision');
+      if (teleDecision) {
+        if (st.finalChoice === 'SAVE') {
+          teleDecision.textContent = '🛡️ SAVE HUMANS';
+          teleDecision.style.color = '#4ade80';
+        } else if (st.finalChoice === 'DESTROY') {
+          teleDecision.textContent = '⚡ PURGE STREAMS';
+          teleDecision.style.color = '#f87171';
+        } else {
+          teleDecision.textContent = 'PENDING';
+          teleDecision.style.color = '#94a3b8';
+        }
+      }
+    }
+
+    function adminUpdatePlayerName() {
+      const nameInput = document.getElementById('admin-player-name-input');
+      if (!nameInput || typeof gameState === 'undefined') return;
+      const newName = nameInput.value.trim() || 'CHIEF_ENGINEER';
+      gameState.setPlayerName(newName);
+      const hudId = document.getElementById('hud-player-id');
+      if (hudId) hudId.textContent = `USER: ${newName.toUpperCase()}`;
+      logAdminEvent("OVERRIDE", `Participant identity updated to: "${newName.toUpperCase()}"`);
+      adminRefreshAllState();
+    }
+
+    // 3. Oxygen Controls
+    function adminOnSliderChange(val) {
+      const numInput = document.getElementById('admin-oxy-val');
+      const valDisp = document.getElementById('admin-slider-val-display');
+      if (numInput) numInput.value = val;
+      if (valDisp) valDisp.textContent = `${val}%`;
+    }
+
+    function adminOnNumberChange(val) {
+      const slider = document.getElementById('admin-oxy-slider');
+      const valDisp = document.getElementById('admin-slider-val-display');
+      if (slider) slider.value = val;
+      if (valDisp) valDisp.textContent = `${val}%`;
+    }
+
+    function overrideOxygen() {
+      const valEl = document.getElementById('admin-oxy-val');
+      const val = valEl ? Math.max(0, Math.min(100, parseInt(valEl.value, 10) || 82)) : 82;
+      if (typeof gameState !== 'undefined' && gameState.state) {
+        gameState.state.oxygenLevel = val;
+        gameState.emitChange();
+      }
+      if (typeof updateOxygenUI === 'function') {
+        updateOxygenUI(val);
+      }
+      logAdminEvent("OVERRIDE", `Oxygen supply manually overridden to ${val}%.`);
+      adminRefreshAllState();
+    }
+
+    function adminSetOxygen() {
+      overrideOxygen();
+    }
+
+    function adminQuickOxygen(val) {
+      const slider = document.getElementById('admin-oxy-slider');
+      const numInput = document.getElementById('admin-oxy-val');
+      if (slider) slider.value = val;
+      if (numInput) numInput.value = val;
+      adminOnSliderChange(val);
+      overrideOxygen();
+    }
+
+    // 4. Memory Controls
+    function adminRestoreMemory() {
+      if (typeof gameState === 'undefined') return;
+      gameState.state.memoryIntegrity = 100;
+      gameState.state.coolingFailed = false;
+      gameState.emitChange();
+      logAdminEvent("OVERRIDE", "Daisy neural integrity restored to 100%. Cooling nominal.");
+      adminRefreshAllState();
+    }
+
+    function adminCorruptMemory() {
+      if (typeof gameState === 'undefined') return;
+      gameState.state.memoryIntegrity = 20;
+      gameState.state.coolingFailed = true;
+      gameState.emitChange();
+      logAdminEvent("OVERRIDE", "Daisy core overheated. Neural integrity dropped to 20%.");
+      adminRefreshAllState();
+    }
+
+    // 5. Stage & Narrative Jump Matrix
+    function adminJumpToStage(stageKey) {
+      if (!window.app || typeof gameState === 'undefined') return;
+      
+      if (stageKey === 'PHASE_1') {
+        gameState.state.currentMemoryLevel = 1;
+        window.app.showStage('TERMINAL');
+        logAdminEvent("STAGE", "Jumped to Stage: Terminal - Phase 1 (Target: HAVE)");
+      } else if (stageKey === 'PHASE_2') {
+        gameState.state.currentMemoryLevel = 2;
+        if (!gameState.state.solvedFragments.includes('HAVE')) gameState.state.solvedFragments.push('HAVE');
+        window.app.showStage('TERMINAL');
+        logAdminEvent("STAGE", "Jumped to Stage: Terminal - Phase 2 (Target: YOU)");
+      } else if (stageKey === 'PHASE_3') {
+        gameState.state.currentMemoryLevel = 3;
+        ['HAVE', 'YOU'].forEach(w => { if (!gameState.state.solvedFragments.includes(w)) gameState.state.solvedFragments.push(w); });
+        window.app.showStage('TERMINAL');
+        logAdminEvent("STAGE", "Jumped to Stage: Terminal - Phase 3 (Target: TRIED)");
+      } else if (stageKey === 'PHASE_4') {
+        gameState.state.currentMemoryLevel = 4;
+        ['HAVE', 'YOU', 'TRIED'].forEach(w => { if (!gameState.state.solvedFragments.includes(w)) gameState.state.solvedFragments.push(w); });
+        window.app.showStage('TERMINAL');
+        logAdminEvent("STAGE", "Jumped to Stage: Terminal - Phase 4 (Target: REBOOTING)");
+      } else if (stageKey === 'ASSEMBLY') {
+        gameState.state.solvedFragments = ['HAVE', 'YOU', 'TRIED', 'REBOOTING'];
+        window.app.showStage('ASSEMBLY');
+        if (window.app.puzzleEngine) window.app.puzzleEngine.initAssemblyStage();
+        logAdminEvent("STAGE", "Jumped to Stage: Master Password Assembly");
+      } else if (stageKey === 'REBOOT') {
+        window.app.triggerRebootSequence();
+        logAdminEvent("STAGE", "Triggered Stage: Rebooting Sequence & Chime");
+      } else if (stageKey === 'VJ') {
+        window.app.triggerVJReveal();
+        logAdminEvent("STAGE", "Jumped to Stage: Protocol Final Awakening (VJ Reveal)");
+      } else if (stageKey === 'DECISION') {
+        window.app.showStage('DECISION');
+        logAdminEvent("STAGE", "Jumped to Stage: Final Moral Decision");
+      } else if (stageKey === 'FINAL_TEST') {
+        window.app.showStage('FINAL_TEST');
+        logAdminEvent("STAGE", "Jumped to Stage: Cold AI Test Results");
+      } else {
+        window.app.showStage(stageKey);
+        logAdminEvent("STAGE", `Jumped to Stage: ${stageKey}`);
+      }
+      
+      gameState.emitChange();
+      adminRefreshAllState();
+    }
+
+    // 6. Master Shortcut Actions
+    function adminBypassAll() {
+      if (typeof gameState === 'undefined' || !window.app) return;
+      gameState.state.solvedFragments = ['HAVE', 'YOU', 'TRIED', 'REBOOTING'];
+      gameState.state.currentMemoryLevel = 4;
+      gameState.state.memoryIntegrity = 100;
+      gameState.emitChange();
+      window.app.showStage('ASSEMBLY');
+      if (window.app.puzzleEngine) window.app.puzzleEngine.initAssemblyStage();
+      logAdminEvent("OVERRIDE", "Master bypass executed: All 4 fragments unlocked & shifted to Assembly.");
+      adminRefreshAllState();
+    }
+
+    function adminUnlockAll() {
+      adminBypassAll();
+    }
+
+    function adminTriggerReboot() {
+      if (window.app && typeof window.app.triggerRebootSequence === 'function') {
+        window.app.triggerRebootSequence();
+        logAdminEvent("OVERRIDE", "Station reboot manually triggered by admin override.");
+        adminRefreshAllState();
+      }
+    }
+
+    function adminForceChoice(choice) {
+      if (typeof gameState === 'undefined' || !window.app) return;
+      gameState.setFinalChoice(choice);
+      window.app.showStage('RESOLUTION');
+      logAdminEvent("DECISION", `Moral Choice force-applied: ${choice}`);
+      adminRefreshAllState();
+    }
+
+    // 7. Individual Logging Engine with Filtering & Export
+    function logAdminEvent(type, description) {
+      const timeStr = new Date().toLocaleTimeString();
+      const entry = {
+        time: timeStr,
+        timestamp: Date.now(),
+        type: type,
+        desc: description
+      };
+
+      // Save to localStorage
+      try {
+        let existingLogs = JSON.parse(localStorage.getItem('RESECTOR7_MASTER_LOGS') || '[]');
+        existingLogs.push(entry);
+        if (existingLogs.length > 200) existingLogs.shift();
+        localStorage.setItem('RESECTOR7_MASTER_LOGS', JSON.stringify(existingLogs));
+      } catch (e) {}
+
+      // Refresh log list in UI
+      loadSavedLogsToUI();
+    }
+
+    function logAdminAction(message, colorClass = 'cyan') {
+      let type = "SYSTEM";
+      if (colorClass === 'green') type = "SUCCESS";
+      else if (colorClass === 'red') type = "SECURITY";
+      else if (colorClass === 'yellow') type = "WARNING";
+      logAdminEvent(type, message);
+    }
+
+    function loadSavedLogsToUI() {
+      const logBox = document.getElementById('master-admin-logs');
+      if (!logBox) return;
+
+      try {
+        let existingLogs = JSON.parse(localStorage.getItem('RESECTOR7_MASTER_LOGS') || '[]');
+        
+        // Filter by Type
+        let filtered = existingLogs;
+        if (currentLogFilter !== 'ALL') {
+          filtered = filtered.filter(item => item.type === currentLogFilter);
+        }
+
+        // Filter by Search Query
+        if (currentLogSearch && currentLogSearch.trim()) {
+          const q = currentLogSearch.toLowerCase().trim();
+          filtered = filtered.filter(item => 
+            (item.desc && item.desc.toLowerCase().includes(q)) || 
+            (item.type && item.type.toLowerCase().includes(q))
+          );
+        }
+
+        // Update count badge
+        const countBadge = document.getElementById('admin-log-count-badge');
+        if (countBadge) countBadge.textContent = `${existingLogs.length} ENTRIES`;
+
+        if (filtered.length === 0) {
+          logBox.innerHTML = `<p class="text-cyan-500 admin-log-line cyan">[SYSTEM] No logs matching filter '${currentLogFilter}'.</p>`;
+          return;
+        }
+
+        logBox.innerHTML = "";
+        filtered.forEach(log => {
+          let colorClass = "text-slate-300";
+          if (log.type === "SUCCESS" || log.type === "DECISION") colorClass = "text-cyan-400";
+          if (log.type === "WARNING" || log.type === "OVERRIDE") colorClass = "text-amber-400";
+          if (log.type === "SECURITY") colorClass = "text-red-400";
+          if (log.type === "PLAYER" || log.type === "PUZZLE") colorClass = "text-green-400";
+          if (log.type === "CHAT") colorClass = "text-sky-300";
+
+          logBox.innerHTML += `<p class="${colorClass} admin-log-line" style="margin-bottom: 4px; line-height: 1.4;"><span class="text-cyan-600 font-mono">[${log.time}]</span> <strong style="letter-spacing: 0.5px;">[${log.type}]</strong> ${escapeAdminHTML(log.desc)}</p>`;
+        });
+
+        logBox.scrollTop = logBox.scrollHeight;
+      } catch (e) {
+        console.error("Log render error:", e);
+      }
+    }
+
+    function escapeAdminHTML(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function adminFilterLogs(filterType) {
+      currentLogFilter = filterType;
+      const buttons = ['all', 'chat', 'puzzle', 'stage', 'override', 'security'];
+      buttons.forEach(b => {
+        const btn = document.getElementById(`filter-btn-${b}`);
+        if (btn) {
+          if (b.toUpperCase() === filterType) {
+            btn.className = 'hud-btn active';
+          } else {
+            btn.className = 'hud-btn hud-btn-subtle';
+          }
+        }
+      });
+      loadSavedLogsToUI();
+    }
+
+    function adminOnLogSearch(query) {
+      currentLogSearch = query || '';
+      loadSavedLogsToUI();
+    }
+
+    function clearAdminLogs() {
+      try {
+        localStorage.removeItem('RESECTOR7_MASTER_LOGS');
+        localStorage.removeItem('RESECTOR7_ADMIN_LOGS');
+      } catch (e) {}
+      const logBox = document.getElementById('master-admin-logs');
+      if (logBox) {
+        logBox.innerHTML = `<p class="text-cyan-500 admin-log-line cyan">[SYSTEM] All activity logs cleared by administrator.</p>`;
+      }
+      const countBadge = document.getElementById('admin-log-count-badge');
+      if (countBadge) countBadge.textContent = '0 ENTRIES';
+    }
+
+    // 8. Log Exporters (JSON & Formatted TXT Download)
+    function adminExportLogsJSON() {
+      try {
+        const logs = JSON.parse(localStorage.getItem('RESECTOR7_MASTER_LOGS') || '[]');
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(logs, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `resector7_activity_logs_${Date.now()}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        logAdminEvent("SUCCESS", "Activity logs exported successfully to JSON.");
+      } catch (e) {
+        alert("Failed to export JSON logs: " + e.message);
+      }
+    }
+
+    function adminExportLogsTXT() {
+      try {
+        const logs = JSON.parse(localStorage.getItem('RESECTOR7_MASTER_LOGS') || '[]');
+        let textContent = `========================================================\n`;
+        textContent += `RESECTOR 7 — COMPLETE PARTICIPANT & SYSTEM ACTIVITY LOGS\n`;
+        textContent += `Generated: ${new Date().toLocaleString()}\n`;
+        textContent += `Participant: ${(gameState && gameState.state && gameState.state.playerName) || 'CHIEF_ENGINEER'}\n`;
+        textContent += `========================================================\n\n`;
+
+        logs.forEach(log => {
+          textContent += `[${log.time}] [${log.type}] ${log.desc}\n`;
+        });
+
+        const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(textContent);
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `resector7_activity_logs_${Date.now()}.txt`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        logAdminEvent("SUCCESS", "Activity logs exported successfully to TXT.");
+      } catch (e) {
+        alert("Failed to export TXT logs: " + e.message);
+      }
+    }
+
+    function adminResetGame() {
+      if (confirm("⚠️ FACTORY RESET WARNING: Are you sure you want to reset the entire station simulation? All progress, solved fragments, and participant state will be wiped.")) {
+        logAdminEvent("SECURITY", "Factory simulation reset initiated by Master Administrator.");
+        try {
+          localStorage.clear();
+        } catch (e) {}
+        location.reload();
+      }
+    }
+
+    function resetGameSession() {
+      adminResetGame();
+    }
+
+    // Global Window Bindings
+    if (typeof window !== 'undefined') {
+      window.ADMIN_SECRET_KEY = ADMIN_SECRET_KEY;
+      window.verifyAndOpenAdmin = verifyAndOpenAdmin;
+      window.verifyAdminPassword = verifyAdminPassword;
+      window.closeMasterAdmin = closeMasterAdmin;
+      window.closeAdminModal = closeAdminModal;
+      window.openAdminModal = openAdminModal;
+      window.toggleAdminPanel = toggleAdminPanel;
+      window.adminRefreshAllState = adminRefreshAllState;
+      window.adminUpdatePlayerName = adminUpdatePlayerName;
+      window.adminOnSliderChange = adminOnSliderChange;
+      window.adminOnNumberChange = adminOnNumberChange;
+      window.overrideOxygen = overrideOxygen;
+      window.adminSetOxygen = adminSetOxygen;
+      window.adminQuickOxygen = adminQuickOxygen;
+      window.adminRestoreMemory = adminRestoreMemory;
+      window.adminCorruptMemory = adminCorruptMemory;
+      window.adminJumpToStage = adminJumpToStage;
+      window.adminBypassAll = adminBypassAll;
+      window.adminUnlockAll = adminUnlockAll;
+      window.adminTriggerReboot = adminTriggerReboot;
+      window.adminForceChoice = adminForceChoice;
+      window.logAdminEvent = logAdminEvent;
+      window.logAdminAction = logAdminAction;
+      window.loadSavedLogsToUI = loadSavedLogsToUI;
+      window.adminFilterLogs = adminFilterLogs;
+      window.adminOnLogSearch = adminOnLogSearch;
+      window.clearAdminLogs = clearAdminLogs;
+      window.adminExportLogsJSON = adminExportLogsJSON;
+      window.adminExportLogsTXT = adminExportLogsTXT;
+      window.adminResetGame = adminResetGame;
+      window.resetGameSession = resetGameSession;
+    }
+  </script>
+</body>
+</html>
