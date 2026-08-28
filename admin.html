@@ -57,6 +57,7 @@
                 <button id="admin-top-redo-btn" onclick="adminPerformRedo()" class="bg-cyan-950/80 border border-cyan-500 text-cyan-300 px-3 py-1.5 rounded text-xs font-bold hover:bg-cyan-900 flex items-center gap-1" title="Redo Next Admin Action (Ctrl+Y)">
                     ⏩ REDO <span id="admin-redo-count-badge" class="bg-black/60 px-1 rounded text-[10px]">0</span>
                 </button>
+                <button onclick="resetSimulationSession()" class="bg-red-950/80 border border-red-500 text-red-300 px-3 py-1.5 rounded text-xs font-bold hover:bg-red-900 flex items-center" title="Reset simulation session back to fresh 30:00 start">🔄 RESET RUN</button>
                 <a href="/" target="_blank" class="bg-cyan-950 border border-cyan-500 text-cyan-300 px-3 py-1.5 rounded text-xs hover:bg-cyan-900 flex items-center">↗ TERMINAL</a>
                 <button onclick="logoutAdmin()" class="bg-red-900/40 border border-red-500 text-red-400 px-3 py-1.5 rounded text-xs hover:bg-red-900/70">LOCKDOWN</button>
             </div>
@@ -157,18 +158,25 @@
                 <div>
                     <label class="block text-xs text-slate-400 mb-2">SET COUNTDOWN DURATION (MINUTES) — UP TO 30 MINS / CUSTOM</label>
                     <div class="flex space-x-2 mb-2">
-                        <input type="number" id="timer-minutes-input" value="30" min="1" max="60" class="cyber-input flex-1 p-2 rounded text-sm text-center" placeholder="Minutes (e.g. 30)">
-                        <button onclick="setTimerDuration()" class="bg-cyan-600 hover:bg-cyan-500 text-black px-4 py-2 rounded text-xs font-bold">APPLY TIME</button>
+                        <input type="number" id="timer-minutes-input" value="30" min="1" max="120" class="cyber-input flex-1 p-2 rounded text-sm text-center" placeholder="Minutes (e.g. 30)" onkeydown="if(event.key==='Enter') setTimerDuration()">
+                        <button onclick="setTimerDuration()" class="bg-cyan-600 hover:bg-cyan-500 text-black px-4 py-2 rounded text-xs font-bold">⚡ APPLY TIME</button>
                     </div>
-                    <div class="flex flex-wrap gap-1">
+                    <div class="flex flex-wrap gap-1 mb-1">
                         <button onclick="resetTimer(1800)" class="bg-purple-950/80 border border-purple-500 text-purple-300 px-2.5 py-1 rounded text-[11px] font-bold hover:bg-purple-900">⏱️ 30:00 (Standard)</button>
+                        <button onclick="resetTimer(1500)" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-2 py-1 rounded text-[10px]">25:00</button>
                         <button onclick="resetTimer(1200)" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-2 py-1 rounded text-[10px]">20:00</button>
                         <button onclick="resetTimer(900)" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-2 py-1 rounded text-[10px]">15:00</button>
                         <button onclick="resetTimer(600)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded text-[10px]">10:00</button>
                         <button onclick="resetTimer(300)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded text-[10px]">05:00</button>
+                        <button onclick="resetTimer(120)" class="bg-amber-950/70 border border-amber-500 text-amber-300 px-2 py-1 rounded text-[10px]">02:00 (Crisis)</button>
+                        <button onclick="resetTimer(60)" class="bg-amber-950/70 border border-amber-500 text-amber-300 px-2 py-1 rounded text-[10px]">01:00 (Alert)</button>
+                    </div>
+                    <div class="flex flex-wrap gap-1">
+                        <button onclick="addTimerSeconds(600)" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded text-[10px]">+10 Mins</button>
                         <button onclick="addTimerSeconds(300)" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded text-[10px]">+5 Mins</button>
                         <button onclick="addTimerSeconds(60)" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded text-[10px]">+1 Min</button>
-                        <button onclick="resetTimer(60)" class="bg-amber-950/70 border border-amber-500 text-amber-300 px-2 py-1 rounded text-[10px]">01:00 (Alert)</button>
+                        <button onclick="subtractTimerSeconds(60)" class="bg-slate-800 hover:bg-slate-700 text-red-400 px-2 py-1 rounded text-[10px]">-1 Min</button>
+                        <button onclick="subtractTimerSeconds(300)" class="bg-slate-800 hover:bg-slate-700 text-red-400 px-2 py-1 rounded text-[10px]">-5 Mins</button>
                         <button onclick="forceFailGame()" class="bg-red-950/80 border border-red-500 text-red-300 px-2 py-1 rounded text-[10px] font-bold">⚠️ FORCE 0:00 (FAIL GAME)</button>
                     </div>
                 </div>
@@ -376,6 +384,25 @@
 
         function addTimerSeconds(seconds) {
             resetTimer(timerSeconds + seconds);
+        }
+
+        function subtractTimerSeconds(seconds) {
+            resetTimer(Math.max(10, timerSeconds - seconds));
+        }
+
+        function resetSimulationSession() {
+            if (confirm("🔄 RESET ACTIVE SIMULATION: Reset session back to a fresh 30:00 start?")) {
+                if (typeof window !== 'undefined' && window.opener && window.opener.gameState) {
+                    window.opener.gameState.state = window.opener.gameState.getDefaultState();
+                    window.opener.gameState.state.missionTimeRemaining = 1800;
+                    window.opener.gameState.state.missionTimerDuration = 1800;
+                    window.opener.gameState.state.missionTimerRunning = true;
+                    window.opener.gameState.save();
+                    window.opener.location.reload();
+                }
+                resetTimer(1800);
+                logAction("Simulation reset to fresh 30:00 session.");
+            }
         }
 
         function forceFailGame() {

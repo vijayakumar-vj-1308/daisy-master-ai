@@ -203,6 +203,30 @@ class ResectorApp {
         this.dom.audioStatusText.textContent = active ? 'AUDIO ON' : 'MUTED';
       });
     }
+
+    const adminBtn = document.getElementById('btn-admin-portal');
+    if (adminBtn) {
+      adminBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof window.toggleAdminPanel === 'function') {
+          window.toggleAdminPanel();
+        } else if (typeof toggleAdminPanel === 'function') {
+          toggleAdminPanel();
+        }
+      });
+    }
+
+    const resetBtn = document.getElementById('btn-quick-reset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof window.resetGameSession === 'function') {
+          window.resetGameSession();
+        }
+      });
+    }
   }
 
   showStage(stageKey) {
