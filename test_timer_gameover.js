@@ -40,7 +40,7 @@ checks.forEach(c => {
 // 2. Check gameState.js for mission timer logic
 const gameStateJs = fs.readFileSync(path.join(__dirname, 'js', 'gameState.js'), 'utf8');
 const stateChecks = [
-  { name: "missionTimeRemaining in default state", pass: gameStateJs.includes('missionTimeRemaining: 300') },
+  { name: "missionTimeRemaining in default state", pass: gameStateJs.includes('missionTimeRemaining: 1800') },
   { name: "setMissionTimer method", pass: gameStateJs.includes('setMissionTimer(seconds)') },
   { name: "toggleMissionTimer method", pass: gameStateJs.includes('toggleMissionTimer(running)') },
   { name: "addMissionTimerSeconds method", pass: gameStateJs.includes('addMissionTimerSeconds(seconds)') },

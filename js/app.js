@@ -139,7 +139,7 @@ class ResectorApp {
         }
       }
 
-      const remaining = Math.max(0, st.missionTimeRemaining != null ? st.missionTimeRemaining : 300);
+      const remaining = Math.max(0, st.missionTimeRemaining != null ? st.missionTimeRemaining : 1800);
       const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
       const secs = String(remaining % 60).padStart(2, '0');
       const timeStr = `${mins}:${secs}`;
@@ -421,11 +421,11 @@ class ResectorApp {
   async playIntroTerminal() {
     this.showStage('INTRO');
 
-    // Guarantee fresh 5-minute timer & clean state for new session intro
+    // Guarantee fresh 30-minute timer & clean state for new session intro
     if (gameState && gameState.state) {
       gameState.state.isGameOver = false;
       gameState.state.gameOverReason = '';
-      gameState.state.missionTimeRemaining = Math.max(300, gameState.state.missionTimeRemaining || 300);
+      gameState.state.missionTimeRemaining = Math.max(1800, gameState.state.missionTimeRemaining || 1800);
       gameState.state.missionTimerRunning = true;
       gameState.save();
     }
@@ -463,7 +463,7 @@ class ResectorApp {
       if (gameState && gameState.state) {
         gameState.state.isGameOver = false;
         gameState.state.gameOverReason = '';
-        gameState.state.missionTimeRemaining = Math.max(300, gameState.state.missionTimeRemaining || 300);
+        gameState.state.missionTimeRemaining = Math.max(1800, gameState.state.missionTimeRemaining || 1800);
         gameState.state.missionTimerRunning = true;
       }
       gameState.triggerMemoryCorruption();
@@ -574,7 +574,7 @@ class ResectorApp {
       gameState.state.isGameOver = false;
       gameState.state.gameOverReason = '';
       if (gameState.state.missionTimeRemaining <= 0) {
-        gameState.state.missionTimeRemaining = 300;
+        gameState.state.missionTimeRemaining = 1800;
       }
       gameState.state.missionTimerRunning = true;
       gameState.save();

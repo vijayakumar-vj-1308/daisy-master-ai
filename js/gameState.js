@@ -50,8 +50,8 @@ class GameStateManager {
       vjRevealed: false,
       finalChoice: null, // 'SAVE' or 'DESTROY'
       testCompleted: false,
-      missionTimeRemaining: 300, // 5 minutes countdown default (300s)
-      missionTimerDuration: 300,
+      missionTimeRemaining: 1800, // 30 minutes countdown default (1800s)
+      missionTimerDuration: 1800,
       missionTimerRunning: true,
       isGameOver: false,
       gameOverReason: '',
@@ -112,7 +112,7 @@ class GameStateManager {
 
       // 4-Category Itemized Scoring (Starts at 0 pts for new players, max 100 pts on completion)
       const fragPts = solvedCount * 10; // +10 pts per fragment (40 max)
-      const speedPts = isCompleted ? (this.state.missionTimeRemaining > 120 ? 20 : 15) : 0;
+      const speedPts = isCompleted ? (this.state.missionTimeRemaining > 600 ? 20 : 15) : 0;
       const promptPts = isCompleted ? (userPromptCount <= 6 ? 20 : (userPromptCount <= 10 ? 15 : 10)) : 0;
       const clueBonus = isCompleted ? Math.max(0, 20 - (totalClues * 5)) : 0; // -5 pts per clue used
 
@@ -206,7 +206,7 @@ class GameStateManager {
         const avgWordsPerPrompt = userPromptCount > 0 ? (userWordCount / userPromptCount).toFixed(1) : '0.0';
 
         const fragPts = solvedCount * 10;
-        const speedPts = isCompleted ? (this.state.missionTimeRemaining > 120 ? 20 : 15) : 0;
+        const speedPts = isCompleted ? (this.state.missionTimeRemaining > 600 ? 20 : 15) : 0;
         const promptPts = isCompleted ? (userPromptCount <= 6 ? 20 : (userPromptCount <= 10 ? 15 : 10)) : 0;
         const clueBonus = isCompleted ? Math.max(0, 20 - (totalClues * 5)) : 0;
 
@@ -217,7 +217,7 @@ class GameStateManager {
           score = fragPts;
         }
 
-        const elapsedSeconds = Math.max(0, (this.state.missionTimerDuration || 300) - (this.state.missionTimeRemaining || 0));
+        const elapsedSeconds = Math.max(0, (this.state.missionTimerDuration || 1800) - (this.state.missionTimeRemaining || 0));
         const timeTaken = `${Math.floor(elapsedSeconds / 60)}m ${String(elapsedSeconds % 60).padStart(2, '0')}s`;
 
         const judgeRating = {
@@ -567,9 +567,9 @@ class GameStateManager {
           const parsed = JSON.parse(data);
           this.state = { ...this.getDefaultState(), ...parsed };
 
-          // If session is on Intro / Identity or has no registered player, guarantee fresh 5-minute timer
+          // If session is on Intro / Identity or has no registered player, guarantee fresh 30-minute timer
           if (this.state.currentStage === 'INTRO' || this.state.currentStage === 'IDENTITY' || !this.state.playerName) {
-            this.state.missionTimeRemaining = Math.max(300, this.state.missionTimeRemaining || 300);
+            this.state.missionTimeRemaining = Math.max(1800, this.state.missionTimeRemaining || 1800);
             this.state.missionTimerRunning = true;
             this.state.isGameOver = false;
             this.state.gameOverReason = '';
@@ -747,7 +747,7 @@ function updateOxygenClockUI() {
   updateOxygenUI(oxy);
 
   if (typeof document !== 'undefined' && st) {
-    const remaining = Math.max(0, st.missionTimeRemaining != null ? st.missionTimeRemaining : 300);
+    const remaining = Math.max(0, st.missionTimeRemaining != null ? st.missionTimeRemaining : 1800);
     const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
     const secs = String(remaining % 60).padStart(2, '0');
     const timeStr = `${mins}:${secs}`;

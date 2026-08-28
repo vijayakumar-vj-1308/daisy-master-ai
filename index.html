@@ -714,7 +714,7 @@
             <div style="display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; font-size: 0.72rem;">
               <span style="color: #94a3b8;">TEAMS: <strong id="admin-kpi-total" style="color: #00f0ff;">0</strong></span>
               <span style="color: #94a3b8;">TOP SCORE: <strong id="admin-kpi-top-score" style="color: #facc15;">—</strong></span>
-              <span style="color: #94a3b8;">TIMER: <strong id="admin-kpi-clock" style="color: #38bdf8;">05:00</strong></span>
+              <span style="color: #94a3b8;">TIMER: <strong id="admin-kpi-clock" style="color: #38bdf8;">30:00</strong></span>
               <span style="color: #94a3b8;">OXYGEN: <strong id="admin-kpi-oxy" style="color: #4ade80;">82%</strong></span>
               <span style="color: #94a3b8;">ACTIVE STAGE: <strong id="admin-session-id-display" style="color: #a855f7;">TERMINAL</strong></span>
             </div>
@@ -975,7 +975,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <span style="color: #f87171; font-weight: bold; font-size: 0.78rem;">⏱️ MISSION COUNTDOWN CLOCK</span>
                 <span id="admin-timer-status-badge" style="background: rgba(0,240,255,0.2); color: #00f0ff; border: 1px solid #00f0ff; font-size: 0.7rem; padding: 2px 8px; border-radius: 3px; font-weight: bold;">
-                  REMAINING: <span id="admin-clock-remaining-display">05:00</span>
+                  REMAINING: <span id="admin-clock-remaining-display">30:00</span>
                 </span>
               </div>
               
@@ -985,16 +985,16 @@
                 <button onclick="adminSetTimerFromInput()" class="hud-btn" style="color: #00f0ff; border-color: #00f0ff; font-size: 0.7rem; padding: 3px 8px;">SET TIME</button>
                 <button onclick="adminToggleTimer()" id="admin-timer-toggle-btn" class="hud-btn hud-btn-subtle" style="font-size: 0.7rem; padding: 3px 8px;">⏸️ PAUSE</button>
                 <button onclick="adminResetTimer(1800)" class="hud-btn" style="font-size: 0.7rem; padding: 3px 8px; color: #c084fc; border-color: #a855f7; font-weight: bold;">⏱️ 30:00</button>
-                <button onclick="adminResetTimer(300)" class="hud-btn hud-btn-subtle" style="font-size: 0.7rem; padding: 3px 8px;">🔄 05:00</button>
+                <button onclick="adminResetTimer(1200)" class="hud-btn hud-btn-subtle" style="font-size: 0.7rem; padding: 3px 8px;">20:00</button>
               </div>
 
               <!-- Quick Presets (Up to 30 Mins) -->
               <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                <button onclick="adminResetTimer(1800)" class="hud-btn" style="font-size: 0.65rem; padding: 2px 7px; color: #e9d5ff; border-color: #a855f7; background: rgba(168,85,247,0.25); font-weight: bold;">⏱️ 30:00 (30 Mins)</button>
+                <button onclick="adminResetTimer(1800)" class="hud-btn" style="font-size: 0.65rem; padding: 2px 7px; color: #e9d5ff; border-color: #a855f7; background: rgba(168,85,247,0.25); font-weight: bold;">⏱️ 30:00 (Standard)</button>
                 <button onclick="adminResetTimer(1200)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px; color: #38bdf8;">20:00</button>
                 <button onclick="adminResetTimer(900)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px; color: #38bdf8;">15:00</button>
                 <button onclick="adminResetTimer(600)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">10:00 (Easy)</button>
-                <button onclick="adminResetTimer(300)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">05:00 (Standard)</button>
+                <button onclick="adminResetTimer(300)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">05:00 (Short)</button>
                 <button onclick="adminResetTimer(180)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">03:00 (Fast)</button>
                 <button onclick="adminResetTimer(60)" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 6px;">01:00 (Crisis)</button>
                 <button onclick="adminAddTimerSeconds(300)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px; color: #4ade80;">+5 Mins</button>
@@ -1126,7 +1126,7 @@
         if (window.gameState) {
           window.gameState.state.isGameOver = false;
           window.gameState.state.gameOverReason = '';
-          window.gameState.state.missionTimeRemaining = 300;
+          window.gameState.state.missionTimeRemaining = 1800;
           window.gameState.state.missionTimerRunning = true;
           window.gameState.triggerMemoryCorruption();
           window.gameState.startOxygenDecay();
@@ -1803,7 +1803,7 @@
         // Live Timer Displays
         const kpiClock = document.getElementById('admin-kpi-clock');
         const adminClockDisplay = document.getElementById('admin-clock-remaining-display');
-        const rem = st.missionTimeRemaining != null ? st.missionTimeRemaining : 300;
+        const rem = st.missionTimeRemaining != null ? st.missionTimeRemaining : 1800;
         const mins = String(Math.floor(rem / 60)).padStart(2, '0');
         const secs = String(rem % 60).padStart(2, '0');
         const timeStr = `${mins}:${secs}`;
