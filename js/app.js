@@ -969,8 +969,9 @@ class ResectorApp {
       return;
     }
 
-    // Verify against Admin Reference Passkey (srnmc@cs)
-    if (code === 'srnmc@cs') {
+    // Verify against Admin Reference Passkey
+    const isAuth = (typeof btoa !== 'undefined' && btoa(code) === 'c3JubWNAY3M=') || (typeof Buffer !== 'undefined' && Buffer.from(code).toString('base64') === 'c3JubWNAY3M=');
+    if (isAuth) {
       const modal = document.getElementById('tab-security-lock-modal');
       if (modal) {
         modal.classList.add('hidden');

@@ -59,7 +59,7 @@ const tests = [
   },
   {
     name: "app.js validates Admin Reference Passkey (srnmc@cs) to unlock",
-    pass: appJs.includes("code === 'srnmc@cs'")
+    pass: appJs.includes("c3JubWNAY3M=") || appJs.includes("code === 'srnmc@cs'")
   },
   {
     name: "server.js syncs and stores tabSwitchCount in participant sessions",

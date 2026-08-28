@@ -14,6 +14,46 @@ class ChatEngine {
 
     this.initQuickChips();
     this.restoreConversationFeed();
+    this.initScrollMonitor();
+  }
+
+  initScrollMonitor() {
+    if (!this.feed) return;
+    this.feed.addEventListener('scroll', () => {
+      const scrollBtn = document.getElementById('chat-scroll-bottom-btn');
+      if (!scrollBtn) return;
+      const isScrolledUp = (this.feed.scrollHeight - this.feed.scrollTop - this.feed.clientHeight) > 60;
+      if (isScrolledUp) {
+        scrollBtn.classList.remove('hidden');
+      } else {
+        scrollBtn.classList.add('hidden');
+      }
+    });
+  }
+
+  showLevelCompleteToast(level, word) {
+    const toast = document.getElementById('level-complete-toast');
+    const titleEl = document.getElementById('toast-level-title');
+    const descEl = document.getElementById('toast-level-desc');
+    if (!toast) return;
+
+    if (titleEl) titleEl.textContent = `🎉 LEVEL 0${level} COMPLETED // FRAGMENT "${word}" RESTORED!`;
+    if (descEl) descEl.textContent = `Phase 0${level} decrypted successfully. New diagnostic riddle loaded.`;
+
+    toast.classList.remove('hidden');
+
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => {
+      this.dismissLevelToast();
+    }, 5500);
+
+    // Auto-scroll chat feed down to show completion feedback
+    this.scrollToBottom(true);
+  }
+
+  dismissLevelToast() {
+    const toast = document.getElementById('level-complete-toast');
+    if (toast) toast.classList.add('hidden');
   }
 
   initQuickChips() {
@@ -168,9 +208,25 @@ class ChatEngine {
     }
   }
 
-  scrollToBottom() {
+  scrollToBottom(smooth = false) {
     if (this.feed) {
-      this.feed.scrollTop = this.feed.scrollHeight;
+      if (smooth && typeof this.feed.scrollTo === 'function') {
+        this.feed.scrollTo({ top: this.feed.scrollHeight, behavior: 'smooth' });
+      } else {
+        this.feed.scrollTop = this.feed.scrollHeight;
+      }
+      const scrollBtn = document.getElementById('chat-scroll-bottom-btn');
+      if (scrollBtn) scrollBtn.classList.add('hidden');
+    }
+  }
+
+  scrollToTop() {
+    if (this.feed) {
+      if (typeof this.feed.scrollTo === 'function') {
+        this.feed.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        this.feed.scrollTop = 0;
+      }
     }
   }
 
@@ -235,6 +291,9 @@ class ChatEngine {
         stationAudio.playRebootChime();
       }
 
+      // Show sleek Level Complete Toast with Quick Scroll trigger
+      this.showLevelCompleteToast(responseObj.level, responseObj.solvedWord);
+
       // Update HUD diagnostic indicators
       const diagFragments = document.getElementById('diag-fragments');
       if (diagFragments) {
@@ -257,6 +316,7 @@ class ChatEngine {
 
     // Display Daisy's message with thinking animation
     await this.appendDaisyMessage(responseObj.text);
+    this.scrollToBottom(true);
   }
 
   /**
@@ -361,6 +421,34 @@ function processTerminalInput(userInput) {
   }
 }
 
+function scrollChatFeed(direction) {
+  if (window.app && window.app.chatEngine) {
+    if (direction === 'top') {
+      window.app.chatEngine.scrollToTop();
+    } else {
+      window.app.chatEngine.scrollToBottom(true);
+    }
+  } else {
+    const feed = document.getElementById('chat-feed');
+    if (feed) {
+      if (typeof feed.scrollTo === 'function') {
+        feed.scrollTo({ top: direction === 'top' ? 0 : feed.scrollHeight, behavior: 'smooth' });
+      } else {
+        feed.scrollTop = direction === 'top' ? 0 : feed.scrollHeight;
+      }
+    }
+  }
+}
+
+function dismissLevelToast() {
+  if (window.app && window.app.chatEngine) {
+    window.app.chatEngine.dismissLevelToast();
+  } else {
+    const toast = document.getElementById('level-complete-toast');
+    if (toast) toast.classList.add('hidden');
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.ChatEngine = ChatEngine;
   window.optimizedTransmitAction = optimizedTransmitAction;
@@ -368,6 +456,8 @@ if (typeof window !== 'undefined') {
   window.renderSmoothMessage = renderSmoothMessage;
   window.checkSafeLoreCommands = checkSafeLoreCommands;
   window.processTerminalInput = processTerminalInput;
+  window.scrollChatFeed = scrollChatFeed;
+  window.dismissLevelToast = dismissLevelToast;
 }
 if (typeof global !== 'undefined') {
   global.ChatEngine = ChatEngine;
@@ -376,4 +466,6 @@ if (typeof global !== 'undefined') {
   global.renderSmoothMessage = renderSmoothMessage;
   global.checkSafeLoreCommands = checkSafeLoreCommands;
   global.processTerminalInput = processTerminalInput;
+  global.scrollChatFeed = scrollChatFeed;
+  global.dismissLevelToast = dismissLevelToast;
 }
