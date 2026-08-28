@@ -656,10 +656,43 @@
 }
 
 /* ==========================================================================
-   STORY BRIEFING & ENDING REVELATION MODALS
+   STORY BRIEFING, REVELATION, TAB LOCK & ADMIN MODALS
    ========================================================================== */
-.story-modal-overlay, .revelation-modal-overlay {
-  animation: fadeInModal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.story-modal-overlay, 
+.revelation-modal-overlay,
+.tab-lock-modal-overlay,
+.admin-modal-overlay,
+#story-briefing-modal,
+#ending-revelation-modal,
+#tab-security-lock-modal,
+#master-admin-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(3, 7, 13, 0.94) !important;
+  z-index: 9999 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  animation: fadeInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.story-modal-overlay.hidden, 
+.revelation-modal-overlay.hidden,
+.tab-lock-modal-overlay.hidden,
+.admin-modal-overlay.hidden,
+#story-briefing-modal.hidden,
+#ending-revelation-modal.hidden,
+#tab-security-lock-modal.hidden,
+#master-admin-modal.hidden {
+  display: none !important;
 }
 
 @keyframes fadeInModal {

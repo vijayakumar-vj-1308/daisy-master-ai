@@ -154,7 +154,7 @@ class ChatEngine {
           if (callback) callback();
           resolve();
         }
-      }, 16);
+      }, 28);
     });
   }
 
@@ -283,7 +283,7 @@ class ChatEngine {
         this.appendDaisyMessage(lines[i].text, resolve);
       });
       gameState.recordConversationTurn(null, lines[i].text, "intro");
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise(r => setTimeout(r, 950));
     }
     if (onComplete) onComplete();
   }

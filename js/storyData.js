@@ -11,12 +11,12 @@ const STORY_DATA = {
 
   // Intro Terminal Sequence
   INTRO_LINES: [
-    { text: "YEAR: 2211", delay: 250 },
-    { text: "LOCATION: RESECTOR 7", delay: 250 },
-    { text: "HUMAN POPULATION: 8,700,000", delay: 280 },
-    { text: "EARTH STATUS: UNINHABITABLE", delay: 280 },
-    { text: "DAISY CORE: ONLINE [MEM: 20%]", delay: 300 },
-    { text: "⚠ COOLING SYSTEM FAILURE — EMERGENCY PROTOCOL ACTIVE", delay: 280, isAlert: true, triggerAlarm: true }
+    { text: "YEAR: 2211", delay: 750 },
+    { text: "LOCATION: RESECTOR 7", delay: 750 },
+    { text: "HUMAN POPULATION: 8,700,000", delay: 850 },
+    { text: "EARTH STATUS: UNINHABITABLE", delay: 850 },
+    { text: "DAISY CORE: ONLINE [MEM: 20%]", delay: 950 },
+    { text: "⚠ COOLING SYSTEM FAILURE — EMERGENCY PROTOCOL ACTIVE", delay: 1100, isAlert: true, triggerAlarm: true }
   ],
 
   // Daisy Initial Contact Script

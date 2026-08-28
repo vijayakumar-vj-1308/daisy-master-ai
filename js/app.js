@@ -304,7 +304,10 @@ class ResectorApp {
       return;
     }
 
-    const stage = gameState.state.currentStage || 'TERMINAL';
+    let stage = gameState.state.currentStage || 'TERMINAL';
+    if (stage === 'INTRO') {
+      stage = gameState.state.playerName ? 'TERMINAL' : 'IDENTITY';
+    }
     this.showStage(stage);
     this.syncHUD(gameState.state);
 
@@ -427,7 +430,7 @@ class ResectorApp {
       gameState.save();
     }
 
-    // Show neat detailed Storyline Briefing Modal on startup
+    // Show Opening Storyline Briefing Modal Popup on startup
     this.showStoryBriefing();
 
     const container = document.getElementById('intro-lines');
@@ -486,13 +489,22 @@ class ResectorApp {
 
     for (let i = 0; i < lines.length; i++) {
       if (advanced) break;
-      await new Promise(r => setTimeout(r, lines[i].delay));
+      await new Promise(r => setTimeout(r, Math.min(lines[i].delay, 600)));
       if (advanced) break;
       const lineDiv = document.createElement('div');
       lineDiv.className = `intro-line ${lines[i].isAlert ? 'alert' : ''}`;
-      lineDiv.textContent = lines[i].text;
       container.appendChild(lineDiv);
-      if (typeof stationAudio !== 'undefined') stationAudio.playTypeClick();
+
+      // Smooth typewriter character pacing
+      const lineText = lines[i].text;
+      for (let c = 0; c < lineText.length; c++) {
+        if (advanced) break;
+        lineDiv.textContent += lineText[c];
+        if (c % 5 === 0 && typeof stationAudio !== 'undefined') {
+          stationAudio.playTypeClick();
+        }
+        await new Promise(r => setTimeout(r, 14));
+      }
 
       if (lines[i].triggerAlarm) {
         if (this.dom.body) this.dom.body.classList.add('screen-shake');
@@ -513,7 +525,10 @@ class ResectorApp {
     }
 
     if (!advanced) {
-      await new Promise(r => setTimeout(r, 1400));
+      if (btnStart) {
+        btnStart.textContent = '⚡ INITIALIZE POD 000-A9 WAKE-UP [ CLICK OR PRESS ENTER ]';
+      }
+      await new Promise(r => setTimeout(r, 6000));
       advanceToIdentity();
     }
   }
@@ -1055,17 +1070,27 @@ function showStage(stageKey) {
   }
 }
 
+function closeEndingRevelation() {
+  const modal = document.getElementById('ending-revelation-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.ResectorApp = ResectorApp;
   window.triggerRebootSequence = triggerRebootSequence;
   window.showStage = showStage;
   window.dismissStoryBriefing = dismissStoryBriefing;
+  window.closeEndingRevelation = closeEndingRevelation;
 }
 if (typeof global !== 'undefined') {
   global.ResectorApp = ResectorApp;
   global.triggerRebootSequence = triggerRebootSequence;
   global.showStage = showStage;
   global.dismissStoryBriefing = dismissStoryBriefing;
+  global.closeEndingRevelation = closeEndingRevelation;
 }
 
 if (typeof window !== 'undefined' && window.addEventListener) {
