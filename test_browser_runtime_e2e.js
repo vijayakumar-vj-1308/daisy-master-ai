@@ -59,6 +59,7 @@ class MockElement {
       restore: () => {},
       translate: () => {},
       rotate: () => {},
+      scale: () => {},
       setLineDash: () => {},
       drawImage: () => {},
       createRadialGradient: () => ({ addColorStop: () => {} }),
@@ -78,6 +79,8 @@ function getOrCreateElement(id) {
 const mockDocument = {
   getElementById: (id) => getOrCreateElement(id),
   createElement: (tag) => new MockElement(),
+  querySelectorAll: (sel) => Object.values(mockDomElements),
+  querySelector: (sel) => Object.values(mockDomElements)[0] || null,
   addEventListener: () => {}
 };
 
@@ -156,10 +159,10 @@ global.daisyAI = window.daisyAI;
     assertTest("Stage IDENTITY activated", mockDomElements['stage-identity'].classList.contains('active'));
     assertTest("Intro screen deactivated", !mockDomElements['stage-intro'].classList.contains('active'));
 
-    // 5. Test participant name submission
-    getOrCreateElement('player-name-input').value = 'NISHANTH';
+    // 5. Test participant Lot No submission
+    getOrCreateElement('player-name-input').value = '01';
     app.dom.identityForm.dispatchEvent({ type: 'submit', preventDefault: () => {} });
-    assertTest("Player name set to NISHANTH", stateMgr.state.playerName === 'NISHANTH');
+    assertTest("Player Lot No formatted and set to LOT 01", stateMgr.state.playerName === 'LOT 01');
     assertTest("Stage transitioned to TERMINAL", stateMgr.state.currentStage === 'TERMINAL');
 
     // 6. Test Daisy chat interaction & fragment 1 (HAVE)

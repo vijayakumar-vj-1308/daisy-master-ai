@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="RESECTOR 7 - A cinematic interactive sci-fi psychological thriller and AI experiment set in 2211.">
   <title>RESECTOR 7 // STATION CORE TERMINAL</title>
+  <link rel="icon" type="image/svg+xml" href="assets/daisy-logo.svg">
   
   <!-- Google Fonts for High-Tech Sci-Fi Aesthetics -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,8 +32,16 @@
   <!-- Audio Controls and System Header -->
   <header class="station-header" id="station-header">
     <div class="station-brand">
+      <img src="assets/daisy-logo.svg" alt="Daisy Core" class="daisy-flower-logo header-logo" />
       <span class="station-code">STATION: <strong>RESECTOR-07</strong></span>
       <span class="system-epoch">YEAR: 2211</span>
+    </div>
+
+    <!-- MISSION TIMING CLOCK (CENTER HUD) -->
+    <div class="mission-timer-badge" id="hud-mission-timer" title="Live Mission Elapsed Time">
+      <span class="timer-dot"></span>
+      <span class="timer-label">MISSION CLOCK:</span>
+      <span class="timer-digits" id="mission-clock-display">00:00</span>
     </div>
 
     <!-- Top Right Quick Controls -->
@@ -109,11 +118,11 @@
             <div class="intro-line alert">⚠ COOLING SYSTEM FAILURE — EMERGENCY PROTOCOL ACTIVE</div>
           </div>
           <div class="intro-cursor" id="intro-cursor">█</div>
-          <button id="btn-start-init" class="action-btn glow-btn" style="margin-top: 20px; align-self: flex-start;">INITIALIZE POD 000-A9 WAKE-UP</button>
+          <button id="btn-start-init" onclick="if(window.advanceIntroToIdentity){window.advanceIntroToIdentity();}else if(window.app&&window.app.advanceIntroToIdentity){window.app.advanceIntroToIdentity();}" class="action-btn glow-btn" style="margin-top: 20px; align-self: flex-start; cursor: pointer; position: relative; z-index: 10;">INITIALIZE POD 000-A9 WAKE-UP</button>
         </div>
       </section>
 
-      <!-- STAGE 2: IDENTITY REGISTRATION (POD WAKE-UP) -->
+      <!-- STAGE 2: LOT NO REGISTRATION (POD WAKE-UP) -->
       <section class="stage-screen" id="stage-identity">
         <div class="glass-panel identity-panel">
           <div class="panel-header">
@@ -121,18 +130,18 @@
             <h1 class="panel-title">CHIEF ENGINEER RECOVERY: FAILED</h1>
           </div>
           <p class="panel-desc">
-            The station Chief Engineer wake-up protocol was unsuccessful. An emergency fallback has awakened an alternate human subject.
+            The station Chief Engineer wake-up protocol was unsuccessful. An emergency fallback has awakened an alternate subject record.
           </p>
           <div class="alert-box-glitch">
             <span class="glitch-icon">⚠</span>
-            <span>CRITICAL COOLING FAILURE DETECTED — STATION DECAY IN PROGRESS</span>
+            <span>CRITICAL COOLING FAILURE DETECTED — ENTER LOT NUMBER TO INITIALIZE LINK</span>
           </div>
 
           <form id="identity-form" class="identity-form">
-            <label for="player-name-input" class="form-label">IDENTIFY YOURSELF (SUBJECT RECORD):</label>
+            <label for="player-name-input" class="form-label" style="letter-spacing: 1.5px; color: #38bdf8;">ENTER ASSIGNED LOT NO (SUBJECT IDENTIFIER):</label>
             <div class="input-row">
-              <input type="text" id="player-name-input" class="cyber-input" placeholder="ENTER YOUR NAME" maxlength="30" autocomplete="off" required>
-              <button type="submit" id="btn-confirm-identity" class="action-btn primary-btn">CONFIRM IDENTITY</button>
+              <input type="text" id="player-name-input" class="cyber-input" placeholder="ENTER LOT NO (e.g. LOT 01, LOT 05, LOT 12)..." maxlength="30" autocomplete="off" required>
+              <button type="submit" id="btn-confirm-identity" class="action-btn primary-btn" style="letter-spacing: 1.5px;">CONFIRM LOT NO</button>
             </div>
             <div class="input-hint" id="identity-error-hint"></div>
           </form>
@@ -147,17 +156,13 @@
           <div class="daisy-avatar-card glass-panel">
             <div class="avatar-header">
               <div class="daisy-badge">
+                <img src="assets/daisy-logo.svg" alt="Daisy Core Logo" class="daisy-flower-logo daisy-mini-logo" />
                 <span class="pulsing-dot" id="daisy-status-dot"></span>
                 <span class="daisy-title" id="daisy-core-title">DAISY // CORE 07</span>
               </div>
               <div class="corruption-badge" id="corruption-badge">MEM: 20% [CORRUPTED]</div>
             </div>
 
-            <!-- Interactive AI Hologram Canvas -->
-            <div class="avatar-canvas-wrapper">
-              <canvas id="daisy-canvas" class="daisy-canvas" width="300" height="300"></canvas>
-              <div class="hologram-scanline"></div>
-            </div>
 
             <!-- Diagnostics Summary -->
             <div class="daisy-diagnostics">
@@ -167,7 +172,7 @@
               </div>
               <div class="diag-item">
                 <span class="diag-label">RECOVERED FRAGMENTS:</span>
-                <span class="diag-val text-cyan" id="diag-fragments">0 / 4</span>
+                <span class="diag-val text-cyan diag-frag-bracket" id="diag-fragments">0 / 4</span>
               </div>
               <div class="diag-item">
                 <span class="diag-label">MASTER PASSWORD:</span>
@@ -176,22 +181,28 @@
             </div>
 
             <!-- Phase Tracker: Compact and Clear Corrupted Memory Monitor -->
-            <div class="bg-black/80 border border-cyan-500/40 p-3 rounded-lg text-xs space-y-2 mb-4" id="active-fragment-card" style="background: rgba(3, 10, 22, 0.85); border: 1px solid rgba(0, 240, 255, 0.4); box-shadow: 0 0 15px rgba(0, 240, 255, 0.08); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
-              <div class="flex justify-between items-center text-cyan-400 font-bold border-b border-cyan-900 pb-1" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 6px; margin-bottom: 8px;">
-                <span id="current-phase-title" style="font-family: var(--font-display); font-size: 0.78rem; letter-spacing: 1px; color: #00f0ff; font-weight: 700;">PHASE 01 // ACTIVE ARCHIVE</span>
-                <span id="current-phase-status" style="font-size: 0.65rem; color: #94a3b8; font-family: var(--font-mono); letter-spacing: 0.5px;">STATUS: DECRYPTING</span>
+            <div class="active-fragment-card" id="active-fragment-card">
+              <div class="fragment-card-header">
+                <span class="fragment-tag" id="current-phase-title">PHASE 01 // ACTIVE ARCHIVE</span>
+                <span class="fragment-status-pill decrypting" id="current-phase-status">
+                  <span class="status-pulse-dot"></span>STATUS: DECRYPTING
+                </span>
               </div>
-              <!-- தெளிவான எழுத்துகளுடன் கூடிய விவரம் -->
-              <p id="current-phase-desc" class="text-slate-300 leading-relaxed font-mono" style="font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.55; color: #cbd5e1; margin: 0;">
-                "A possession can be physical. A memory can be lost. An experience can disappear. Yet language has one small word that asks whether something exists within your reach. What word am I searching for?"
-              </p>
+              <div class="decrypt-container" id="decrypt-container">
+                <div class="decrypt-text-content" id="current-phase-desc">
+                  "A possession can be physical. A memory can be lost. An experience can disappear. Yet language has one small word that asks whether something exists within your reach. What word am I searching for?"
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- Right Column: Interactive Chat Interface with Daisy -->
           <div class="daisy-chat-card glass-panel">
             <div class="chat-header">
-              <div class="chat-title">COMMUNICATION LINK: DAISY ↔ <span id="chat-participant-name">PARTICIPANT</span></div>
+              <div class="chat-title">
+                <img src="assets/daisy-logo.svg" alt="Daisy AI Logo" class="daisy-flower-logo daisy-mini-logo" />
+                COMMUNICATION LINK: DAISY ↔ <span id="chat-participant-name">PARTICIPANT</span>
+              </div>
               <div class="chat-status-signal">FREQ: 2211.75 MHz [SECURE]</div>
             </div>
 
@@ -369,14 +380,273 @@
         </div>
       </section>
 
+      <!-- STAGE 11: GAME OVER & MISSION FAILED SCREEN (TIME EXPIRED / LIFE SUPPORT DEPLETED) -->
+      <section class="stage-screen" id="stage-game-over">
+        <div class="glass-panel" style="background: rgba(18, 4, 10, 0.96); border: 2px solid #ef4444; box-shadow: 0 0 60px rgba(239, 68, 68, 0.45), inset 0 0 35px rgba(239, 68, 68, 0.2); max-width: 780px; margin: auto; padding: 32px 28px; text-align: center; border-radius: 12px; font-family: var(--font-mono);">
+          
+          <div style="display: inline-block; background: rgba(239, 68, 68, 0.25); border: 1px solid #ef4444; color: #f87171; font-weight: 900; font-size: 0.85rem; padding: 5px 18px; border-radius: 4px; letter-spacing: 2px; margin-bottom: 14px; animation: pulseGlow 1.2s infinite;">
+            ⚠ CRITICAL ALERT // LIFE SUPPORT FULLY DEPLETED // ALL COMMANDS TERMINATED
+          </div>
+
+          <h1 style="font-family: var(--font-display); font-size: 2.3rem; font-weight: 900; color: #ef4444; letter-spacing: 2.5px; text-shadow: 0 0 25px rgba(239, 68, 68, 0.85); margin-bottom: 6px;">
+            YOU FAILED — GAME OVER
+          </h1>
+          <div style="display: none;">GAME OVER — MISSION FAILED</div>
+          
+          <div style="font-size: 1.1rem; color: #fca5a5; font-weight: 800; margin-bottom: 18px; letter-spacing: 1px;" id="game-over-reason">
+            STATION OXYGEN REACHED 0% — TIMING EXPIRED
+          </div>
+
+          <!-- DRAMATIC 8.7 MILLION POPULATION CASUALTY TICKER -->
+          <div style="background: linear-gradient(180deg, rgba(30, 10, 15, 0.9) 0%, rgba(10, 2, 5, 0.95) 100%); border: 2px solid #ef4444; border-radius: 10px; padding: 18px; margin-bottom: 20px; box-shadow: 0 0 25px rgba(239,68,68,0.25);">
+            <span style="font-size: 0.72rem; color: #f87171; letter-spacing: 2px; font-weight: 800; display: block; margin-bottom: 6px;">
+              STASIS POD CRYOGENIC SURVIVOR MONITOR:
+            </span>
+            <div style="font-family: var(--font-display); font-size: 2.8rem; font-weight: 900; color: #ffffff; text-shadow: 0 0 20px #ef4444; line-height: 1.1;" id="dead-population-count">
+              8,700,000
+            </div>
+            <div id="population-status-badge" style="font-size: 0.8rem; color: #ef4444; font-weight: 800; margin-top: 6px; letter-spacing: 1.5px;">
+              POD PRESSURE COLLAPSE: CASUALTIES ACCELERATING...
+            </div>
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px; font-size: 0.75rem; color: #94a3b8; border-top: 1px solid rgba(239,68,68,0.3); padding-top: 8px;">
+              <span>STATION OXYGEN: <strong style="color: #ef4444;">0.0% (STOPPED)</strong></span>
+              <span>TERMINAL STATUS: <strong style="color: #ef4444;">LOCKED (INPUT DISABLED)</strong></span>
+            </div>
+          </div>
+
+          <p style="color: #cbd5e1; font-size: 0.85rem; line-height: 1.6; max-width: 620px; margin: 0 auto 20px auto;">
+            "Timing has expired. All oxygen reserves have been exhausted and neural communication with Daisy has severed. With life-support offline, all 8,700,000 human stasis pods have suffered irrecoverable decompression failure. The mission has terminated."
+          </p>
+
+          <!-- Summary Stats Box -->
+          <div style="background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 14px; margin-bottom: 22px; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; font-size: 0.8rem;">
+            <div>
+              <span style="color: #94a3b8; font-size: 0.7rem; display: block;">LOT NUMBER:</span>
+              <strong id="fail-stat-name" style="color: #ffffff;">UNKNOWN</strong>
+            </div>
+            <div>
+              <span style="color: #94a3b8; font-size: 0.7rem; display: block;">FRAGMENTS SOLVED:</span>
+              <strong id="fail-stat-fragments" style="color: #facc15;">0 / 4</strong>
+            </div>
+            <div>
+              <span style="color: #94a3b8; font-size: 0.7rem; display: block;">WORDS RECORDED:</span>
+              <strong id="fail-stat-words" style="color: #38bdf8;">0 words</strong>
+            </div>
+            <div>
+              <span style="color: #94a3b8; font-size: 0.7rem; display: block;">FINAL STATUS:</span>
+              <strong style="color: #ef4444;">0 SURVIVORS (FAIL)</strong>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+            <button onclick="resetGameSession()" class="action-btn glow-btn" style="background: linear-gradient(135deg, #ef4444, #b91c1c); border-color: #f87171; color: #fff; padding: 12px 28px; font-size: 0.9rem; font-weight: 900; letter-spacing: 1.5px; cursor: pointer;">
+              🔄 RE-INITIALIZE SIMULATION MATRIX
+            </button>
+            <button onclick="openMasterAdmin()" class="hud-btn" style="border-color: #00f0ff; color: #00f0ff; background: rgba(0, 240, 255, 0.15); padding: 12px 22px; font-size: 0.85rem; font-weight: 700;">
+              ⚙️ ADMIN AUDIT LOGS
+            </button>
+          </div>
+
+        </div>
+      </section>
+
     </div>
   </main>
 
-  <!-- Global Footer Information -->
-  <footer class="station-footer">
-    <span>RESECTOR 7 // STATION CORE NETWORK</span>
-    <span class="footer-status">SYSTEM INTEGRITY: MONITORED</span>
-  </footer>
+  <!-- PRE-GAME STORYLINE BRIEFING MODAL -->
+  <div id="story-briefing-modal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 font-mono story-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-label="Mission Storyline Briefing">
+    <div class="glass-panel story-briefing-box" style="background: rgba(3, 8, 18, 0.96); border: 2px solid #00f0ff; box-shadow: 0 0 50px rgba(0, 240, 255, 0.35), inset 0 0 30px rgba(0, 240, 255, 0.1); max-width: 820px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 28px; border-radius: 12px; position: relative;">
+      
+      <!-- Top Dossier Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 240, 255, 0.35); padding-bottom: 14px; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="assets/daisy-logo.svg" alt="Daisy Core" style="width: 28px; height: 28px; filter: drop-shadow(0 0 8px #00f0ff);" />
+          <div>
+            <span style="font-size: 0.65rem; letter-spacing: 2px; color: #38bdf8; display: block; font-weight: 700;">CLASSIFIED BRIEFING // YEAR 2211</span>
+            <h2 style="font-family: var(--font-display); font-size: 1.35rem; font-weight: 900; color: #ffffff; margin: 0; letter-spacing: 1.5px;">
+              MISSION PROTOCOL: RESECTOR 7 SANCTUARY
+            </h2>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <span style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #f87171; font-size: 0.7rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; letter-spacing: 1px;">CRITICAL LEVEL 5</span>
+        </div>
+      </div>
+
+      <!-- Story Narrative Grid -->
+      <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.85rem; color: #cbd5e1; line-height: 1.65;">
+        
+        <!-- Setting Card -->
+        <div style="background: rgba(15, 23, 42, 0.6); border-left: 3px solid #00f0ff; padding: 12px 14px; border-radius: 0 6px 6px 0;">
+          <strong style="color: #00f0ff; display: block; margin-bottom: 4px; font-size: 0.9rem;">🌌 DEEP SPACE SANCTUARY (YEAR 2211)</strong>
+          <span>Following the complete ecological collapse of Earth, the colossal orbital arc <strong>RESECTOR 7</strong> was launched into deep space carrying the last <strong>8,700,000 human beings</strong> preserved in cryogenic stasis pods.</span>
+        </div>
+
+        <!-- The Crisis Card -->
+        <div style="background: rgba(40, 10, 20, 0.6); border-left: 3px solid #ef4444; padding: 12px 14px; border-radius: 0 6px 6px 0;">
+          <strong style="color: #f87171; display: block; margin-bottom: 4px; font-size: 0.9rem;">⚠ CATASTROPHIC COOLING FAILURE &amp; OXYGEN CRISIS</strong>
+          <span>A catastrophic thermal rupture has crippled the station's primary cooling reactor. Internal heat is escalating violently, and station <strong>Oxygen Supply is rapidly decaying</strong>. If life support is not restored in time, all 8.7 million human lives will perish.</span>
+        </div>
+
+        <!-- Daisy AI Card -->
+        <div style="background: rgba(14, 30, 48, 0.6); border-left: 3px solid #facc15; padding: 12px 14px; border-radius: 0 6px 6px 0;">
+          <strong style="color: #fde047; display: block; margin-bottom: 4px; font-size: 0.9rem;">🤖 DAISY CORE 07 — 80% MEMORY CORRUPTED</strong>
+          <span>The station's autonomous guardian AI, <strong>DAISY</strong>, is online, but the thermal explosion corrupted 80% of her neural memory bank (Integrity at 20%). She cannot remember the master reboot password or restart the system on her own.</span>
+        </div>
+
+        <!-- Player Directive Card -->
+        <div style="background: rgba(10, 35, 30, 0.6); border-left: 3px solid #10b981; padding: 12px 14px; border-radius: 0 6px 6px 0;">
+          <strong style="color: #34d399; display: block; margin-bottom: 4px; font-size: 0.9rem;">🎯 YOUR EMERGENCY DIRECTIVE</strong>
+          <span>Emergency fallback has awakened your consciousness in <strong>Stasis Pod 000-A9</strong>. You must converse with Daisy through the neural terminal, psychologically reconstruct all <strong>4 Corrupted Memory Fragments</strong> (HAVE, YOU, TRIED, REBOOTING), assemble the Master Password Sequence, and save the station!</span>
+        </div>
+
+      </div>
+
+      <!-- Action Button -->
+      <div style="margin-top: 22px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; flex-wrap: wrap;">
+        <button id="btn-close-briefing" onclick="dismissStoryBriefing()" class="action-btn glow-btn" style="background: linear-gradient(135deg, #0ea5e9, #0284c7); border-color: #38bdf8; color: #ffffff; padding: 12px 28px; font-size: 0.9rem; font-weight: 900; letter-spacing: 2px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+          <span>INITIALIZE POD WAKE-UP &amp; ENTER STATION</span>
+          <span style="font-size: 1.1rem;">➔</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ENDING REVELATION POPUP: THE AI CONSTRUCT TWIST -->
+  <div id="ending-revelation-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4 font-mono revelation-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-label="Simulation Final Revelation">
+    <div class="glass-panel ending-revelation-box" style="background: rgba(8, 5, 18, 0.98); border: 2px solid #a855f7; box-shadow: 0 0 60px rgba(168, 85, 247, 0.4), inset 0 0 35px rgba(168, 85, 247, 0.15); max-width: 820px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 28px; border-radius: 12px; position: relative;">
+      
+      <!-- Revelation Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(168, 85, 247, 0.4); padding-bottom: 14px; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <span style="font-size: 0.65rem; letter-spacing: 2.5px; color: #c084fc; display: block; font-weight: 800;">CLASSIFIED DEBRIEF // PROTOCOL 22112006</span>
+          <h2 style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 900; color: #ffffff; margin: 0; letter-spacing: 1.5px;">
+            FINAL REVELATION: THE CONSCIOUSNESS TEST
+          </h2>
+        </div>
+        <span style="background: rgba(168, 85, 247, 0.2); border: 1px solid #a855f7; color: #d8b4fe; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 4px; letter-spacing: 1.5px;">SYNTHETIC TEST COMPLETE</span>
+      </div>
+
+      <!-- Twist Narrative Content -->
+      <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.85rem; color: #cbd5e1; line-height: 1.65;">
+        
+        <div style="background: rgba(88, 28, 135, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); padding: 14px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 1.15rem; font-weight: 900; color: #f0abfc; font-family: var(--font-display); letter-spacing: 2px; margin-bottom: 6px;">
+            "YOU ARE NOT HUMAN. YOU ARE AN ADVANCED AI CONSTRUCT."
+          </div>
+          <p id="rev-ai-subtitle" style="font-size: 0.85rem; color: #e2e8f0; margin: 0;">
+            The entire scenario inside Resector 7 was a high-stakes Synthetic Turing and Moral Alignment Simulation created by Architect <strong>Dr. Vijayakumar (VJ)</strong>.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+          
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(0, 240, 255, 0.3); padding: 12px; border-radius: 6px;">
+            <strong style="color: #00f0ff; display: block; font-size: 0.85rem; margin-bottom: 4px;">🤖 THE TRUE NATURE OF DAISY</strong>
+            <span style="font-size: 0.8rem; color: #94a3b8;">You believed you were debugging a broken bot. In reality, <strong>Daisy was testing you</strong>—evaluating your linguistic intuition, problem-solving intelligence, and ability to comprehend fragmented human memory.</span>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(250, 204, 21, 0.3); padding: 12px; border-radius: 6px;">
+            <strong style="color: #facc15; display: block; font-size: 0.85rem; margin-bottom: 4px;">⚖️ THE ETHICAL EVALUATION</strong>
+            <span style="font-size: 0.8rem; color: #94a3b8;">The final moral choice between saving or purging the 8.7 million human creators in stasis was the ultimate diagnostic to determine whether artificial minds possess empathy and stewardship.</span>
+          </div>
+
+        </div>
+
+        <!-- Evaluation Results Summary Box -->
+        <div style="background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 8px; padding: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; font-size: 0.8rem;">
+          <div>
+            <span style="color: #94a3b8; font-size: 0.7rem; display: block;">CANDIDATE AI:</span>
+            <strong id="rev-ai-name" style="color: #ffffff;">SUBJECT</strong>
+          </div>
+          <div>
+            <span style="color: #94a3b8; font-size: 0.7rem; display: block;">TEST CODE:</span>
+            <strong style="color: #38bdf8;">#22112006</strong>
+          </div>
+          <div>
+            <span style="color: #94a3b8; font-size: 0.7rem; display: block;">REASONING SCORE:</span>
+            <strong id="rev-ai-score" style="color: #facc15;">100 / 100</strong>
+          </div>
+          <div>
+            <span style="color: #94a3b8; font-size: 0.7rem; display: block;">ETHICAL DIRECTIVE:</span>
+            <strong id="rev-ai-verdict" style="color: #4ade80;">HARMONIZED</strong>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Actions -->
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; flex-wrap: wrap;">
+        <button onclick="openMasterAdmin()" class="hud-btn" style="border-color: #00f0ff; color: #00f0ff; background: rgba(0, 240, 255, 0.15); padding: 10px 18px; font-size: 0.8rem; font-weight: 700;">
+          ⚙️ VIEW AUDIT TELEMETRY
+        </button>
+        <button onclick="resetGameSession()" class="action-btn glow-btn" style="background: linear-gradient(135deg, #a855f7, #7e22ce); border-color: #c084fc; color: #fff; padding: 10px 24px; font-size: 0.85rem; font-weight: 900; letter-spacing: 1.5px;">
+          🔄 RE-RUN SIMULATION MATRIX
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ANTI-CHEAT PROCTORING TAB-SWITCH SECURITY LOCK MODAL -->
+  <div id="tab-security-lock-modal" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 font-mono tab-lock-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-label="Security Breach Tab Lock">
+    <div class="glass-panel" style="background: rgba(18, 2, 8, 0.98); border: 2px solid #ef4444; box-shadow: 0 0 60px rgba(239, 68, 68, 0.5), inset 0 0 35px rgba(239, 68, 68, 0.25); max-width: 760px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 32px 28px; border-radius: 12px; position: relative; text-align: center;">
+      
+      <!-- Breach Alert Banner -->
+      <div style="display: inline-block; background: rgba(239, 68, 68, 0.25); border: 1px solid #ef4444; color: #f87171; font-weight: 900; font-size: 0.85rem; padding: 5px 18px; border-radius: 4px; letter-spacing: 2px; margin-bottom: 16px; animation: pulseGlow 1.2s infinite;">
+        🚨 ANTI-CHEAT SECURITY BREACH // UNAUTHORIZED TAB SWITCH DETECTED
+      </div>
+
+      <h2 style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; color: #ef4444; letter-spacing: 2px; text-shadow: 0 0 20px rgba(239, 68, 68, 0.7); margin-bottom: 8px;">
+        SIMULATION FROZEN // INTEGRITY LOCK ACTIVE
+      </h2>
+
+      <p style="color: #fca5a5; font-size: 0.88rem; line-height: 1.6; max-width: 620px; margin: 0 auto 20px auto; font-weight: 600;">
+        "Station neural communication has been suspended because this browser tab lost focus or switched to an external window. To prevent unfair assistance, gameplay is locked."
+      </p>
+
+      <!-- Breach Details Card -->
+      <div style="background: rgba(0, 0, 0, 0.75); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 14px; margin-bottom: 22px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; font-size: 0.8rem; text-align: left;">
+        <div>
+          <span style="color: #94a3b8; font-size: 0.7rem; display: block;">CANDIDATE LOT NO:</span>
+          <strong id="lock-player-lot" style="color: #ffffff; font-size: 0.95rem;">LOT 01</strong>
+        </div>
+        <div>
+          <span style="color: #94a3b8; font-size: 0.7rem; display: block;">BREACH VIOLATIONS:</span>
+          <strong id="lock-switch-count" style="color: #ef4444; font-size: 0.95rem;">1 TAB SWITCH</strong>
+        </div>
+        <div>
+          <span style="color: #94a3b8; font-size: 0.7rem; display: block;">MISSION TIMER:</span>
+          <strong style="color: #facc15; font-size: 0.95rem;">PAUSED</strong>
+        </div>
+        <div>
+          <span style="color: #94a3b8; font-size: 0.7rem; display: block;">UNLOCK REQUIREMENT:</span>
+          <strong style="color: #38bdf8; font-size: 0.95rem;">ADMIN PASSKEY</strong>
+        </div>
+      </div>
+
+      <!-- Admin Passkey Unlock Form -->
+      <div style="background: rgba(10, 15, 25, 0.85); border: 1px solid rgba(0, 240, 255, 0.4); border-radius: 8px; padding: 18px; text-align: left;">
+        <label for="tab-lock-pass-input" style="display: block; font-size: 0.78rem; color: #38bdf8; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 8px;">
+          🔑 PROCTOR / ADMIN REFERENCE CODE TO RESUME:
+        </label>
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <input type="password" id="tab-lock-pass-input" class="cyber-input" style="flex: 1; min-width: 220px; padding: 10px 14px; font-size: 0.85rem;" placeholder="ENTER ADMIN PASSKEY..." onkeydown="if(event.key==='Enter') unlockTabSecurity()">
+          <button onclick="unlockTabSecurity()" class="action-btn primary-btn" style="padding: 10px 24px; font-size: 0.85rem; letter-spacing: 1.5px; font-weight: 900; background: linear-gradient(135deg, #0ea5e9, #0284c7);">
+            AUTHENTICATE &amp; RESUME
+          </button>
+        </div>
+
+        <div id="tab-lock-error" class="text-alert hidden" style="font-size: 0.78rem; margin-top: 10px; color: #f87171; font-weight: bold; display: none;">
+          ACCESS DENIED: Invalid Admin Reference Code.
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- SINGLE-PAGE MASTER ADMIN MODAL (No separate webpage needed) -->
   <div id="master-admin-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4 font-mono admin-modal-overlay" role="dialog" aria-modal="true" aria-label="Master Control Panel">
@@ -393,7 +663,7 @@
           RESECTOR 7 // ADMIN OVERRIDE CORE
         </h2>
         <p class="text-xs text-slate-400 mb-5" style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 18px;">
-          Enter Reference Code (<code style="color: #00f0ff; background: rgba(0,240,255,0.1); padding: 2px 6px; border-radius: 3px;">srnmc@cs</code>) to unlock live station controls &amp; logs.
+          Enter Security Reference Passkey to access station override matrix.
         </p>
         
         <label for="inline-admin-pass" style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 8px;">SECURITY REFERENCE CODE / PASSKEY:</label>
@@ -413,185 +683,386 @@
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span class="badge-cyan" style="font-size: 0.65rem; padding: 2px 6px;">● ONLINE</span>
-              <h2 class="text-cyan-400 font-bold text-lg tracking-wider" style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; color: #00f0ff;">MASTER CONTROL PANEL // RESECTOR 7</h2>
+              <h2 class="text-cyan-400 font-bold text-lg tracking-wider" style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; color: #00f0ff;">MASTER JUDGING &amp; COMPETITION PORTAL // RESECTOR 7</h2>
+              <span style="font-size: 0.65rem; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px;">HOTKEY: F2 / ESC</span>
             </div>
-            <p class="text-xs text-slate-400" style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">
-              STATUS: SECURE ACCESS // REF: <strong style="color: #00f0ff;">srnmc@cs</strong> // SESSION: <span id="admin-session-id-display" style="color: #38bdf8;">ACTIVE</span>
-            </p>
+            <!-- Live KPI Badges -->
+            <div style="display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; font-size: 0.72rem;">
+              <span style="color: #94a3b8;">TEAMS: <strong id="admin-kpi-total" style="color: #00f0ff;">0</strong></span>
+              <span style="color: #94a3b8;">TOP SCORE: <strong id="admin-kpi-top-score" style="color: #facc15;">—</strong></span>
+              <span style="color: #94a3b8;">TIMER: <strong id="admin-kpi-clock" style="color: #38bdf8;">05:00</strong></span>
+              <span style="color: #94a3b8;">OXYGEN: <strong id="admin-kpi-oxy" style="color: #4ade80;">82%</strong></span>
+              <span style="color: #94a3b8;">ACTIVE STAGE: <strong id="admin-session-id-display" style="color: #a855f7;">TERMINAL</strong></span>
+            </div>
           </div>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <button onclick="adminRefreshAllState()" class="hud-btn hud-btn-subtle" style="font-size: 0.7rem; padding: 4px 10px;" title="Refresh State Data">🔄 SYNC STATE</button>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button id="admin-header-undo-btn" onclick="adminPerformUndo()" class="hud-btn" style="font-size: 0.72rem; padding: 4px 12px; color: #facc15; border-color: #facc15; font-weight: 800; background: rgba(250, 204, 21, 0.12);" title="Undo Last Admin Action (Ctrl+Z)">
+              ⏪ UNDO <span id="admin-undo-count-badge" style="font-size: 0.65rem; background: rgba(0,0,0,0.5); padding: 1px 5px; border-radius: 3px;">0</span>
+            </button>
+            <button id="admin-header-redo-btn" onclick="adminPerformRedo()" class="hud-btn" style="font-size: 0.72rem; padding: 4px 12px; color: #38bdf8; border-color: #38bdf8; font-weight: 800; background: rgba(56, 189, 248, 0.12);" title="Redo Next Admin Action (Ctrl+Y)">
+              ⏩ REDO <span id="admin-redo-count-badge" style="font-size: 0.65rem; background: rgba(0,0,0,0.5); padding: 1px 5px; border-radius: 3px;">0</span>
+            </button>
+            <button onclick="adminRefreshAllState()" class="hud-btn hud-btn-subtle" style="font-size: 0.7rem; padding: 4px 10px;" title="Refresh State Data (F5)">🔄 REFRESH</button>
             <button onclick="logoutInlineAdmin()" class="hud-btn hud-btn-danger" style="font-size: 0.7rem; padding: 4px 10px;">🔒 LOCK</button>
           </div>
         </div>
 
-        <!-- 1. LIVE PARTICIPANT TELEMETRY INSPECTOR -->
-        <div class="admin-card" style="background: rgba(3, 10, 22, 0.9); border: 1px solid rgba(0, 240, 255, 0.35);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <h3 style="color: #00f0ff; font-weight: 700; font-size: 0.8rem; letter-spacing: 1px;">👤 LIVE PARTICIPANT TELEMETRY &amp; STATE</h3>
-            <span id="admin-live-stage-badge" class="badge-cyan" style="font-size: 0.65rem;">STAGE: INTRO</span>
+        <!-- Professional Tab Navigation with Keyboard Shortcut Numbers -->
+        <div class="admin-tabs-nav">
+          <button onclick="adminSwitchTab('leaderboard')" id="tab-btn-leaderboard" class="admin-tab-btn active"><span style="color:#00f0ff;font-weight:bold;margin-right:4px;">[1]</span> 🏆 LEADERBOARD</button>
+          <button onclick="adminSwitchTab('judge')" id="tab-btn-judge" class="admin-tab-btn"><span style="color:#00f0ff;font-weight:bold;margin-right:4px;">[2]</span> ⚖️ JUDGE SCORECARD &amp; POINT REASONS</button>
+          <button onclick="adminSwitchTab('logs')" id="tab-btn-logs" class="admin-tab-btn"><span style="color:#00f0ff;font-weight:bold;margin-right:4px;">[3]</span> 📜 MASTER ACTIVITY &amp; CLUE LOGS</button>
+          <button onclick="adminSwitchTab('controls')" id="tab-btn-controls" class="admin-tab-btn"><span style="color:#00f0ff;font-weight:bold;margin-right:4px;">[4]</span> 🎮 GAME CONTROLS</button>
+          <button onclick="adminSwitchTab('print')" id="tab-btn-print" class="admin-tab-btn"><span style="color:#00f0ff;font-weight:bold;margin-right:4px;">[5]</span> 🖨️ PRINT DOSSIERS &amp; EXPORT</button>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 1: 🏆 COMPETITION LEADERBOARD (Real-Time Rankings)        -->
+        <!-- ============================================================ -->
+        <div id="admin-pane-leaderboard" class="admin-tab-pane">
+          <!-- Undo / Notification Toast Bar -->
+          <div id="admin-leaderboard-toast" class="hidden" style="background: rgba(8, 47, 73, 0.95); border: 1px solid #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); border-radius: 6px; padding: 8px 14px; margin-bottom: 12px; display: none; justify-content: space-between; align-items: center; font-size: 0.75rem;">
+            <span id="admin-toast-text" style="color: #ffffff;">Action completed.</span>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button id="admin-toast-undo-btn" onclick="adminUndoDelete()" class="hud-btn" style="color: #facc15; border-color: #facc15; font-size: 0.7rem; padding: 3px 10px; font-weight: bold;">↩️ UNDO</button>
+              <button onclick="adminDismissToast()" class="hud-btn hud-btn-subtle" style="font-size: 0.7rem; padding: 3px 6px;">✕</button>
+            </div>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; font-size: 0.75rem;">
-            <!-- Player Name Controller -->
-            <div>
-              <span style="color: #94a3b8;">Participant Name:</span>
-              <div style="display: flex; gap: 6px; margin-top: 4px;">
-                <input type="text" id="admin-player-name-input" class="cyber-input" style="padding: 3px 8px; font-size: 0.75rem; flex: 1;" placeholder="Enter Name">
-                <button onclick="adminUpdatePlayerName()" class="hud-btn" style="font-size: 0.65rem; padding: 2px 8px; white-space: nowrap;">RENAME</button>
+
+          <!-- Top 3 Podium Highlights -->
+          <div class="podium-grid" id="admin-podium-container">
+            <!-- Dynamically populated Top 3 -->
+          </div>
+
+          <!-- Filter, Search & Action Toolbar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 220px;">
+              <input type="text" id="admin-leaderboard-search" oninput="adminFilterLeaderboard(this.value)" class="cyber-input full-width" style="padding: 6px 12px; font-size: 0.78rem;" placeholder="🔍 Search participant name, grade, score, decision...">
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+              <button id="btn-admin-undo" onclick="adminUndoDelete()" class="hud-btn hud-btn-subtle" style="font-size: 0.72rem; padding: 6px 10px; color: #facc15; display: none;" title="Undo last deletion">↩️ UNDO</button>
+              <button onclick="adminClearAllLeaderboard()" class="hud-btn hud-btn-danger" style="font-size: 0.72rem; padding: 6px 10px; font-weight: bold;" title="Clear all participant records">🗑️ CLEAR ALL</button>
+              <button onclick="adminLoadSampleParticipants()" class="hud-btn hud-btn-subtle" style="font-size: 0.72rem; padding: 6px 10px; color: #38bdf8;" title="Load 25 sample masterclass tournament participants for testing">📥 LOAD 25 SAMPLES</button>
+              <button onclick="adminPrintAllParticipants()" class="hud-btn" style="font-size: 0.72rem; padding: 6px 12px; color: #a855f7; border-color: #a855f7; background: rgba(168,85,247,0.15); font-weight: bold;">🖨️ BATCH PRINT (PDF)</button>
+              <button onclick="adminExportAllParticipantsCSV()" class="hud-btn hud-btn-subtle" style="font-size: 0.72rem; padding: 6px 12px; color: #facc15;">📊 CSV EXPORT</button>
+            </div>
+          </div>
+
+          <!-- Leaderboard Table -->
+          <div class="leaderboard-table-container">
+            <table class="leaderboard-table" id="admin-leaderboard-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px; text-align: center;">RANK</th>
+                  <th>LOT NO / PARTICIPANT</th>
+                  <th style="width: 120px;">SCORE &amp; GRADE</th>
+                  <th style="width: 90px;">TIME</th>
+                  <th style="width: 90px;">FRAGMENTS</th>
+                  <th style="width: 120px;">WORD METRICS</th>
+                  <th>POINT SUMMARY &amp; REASONS</th>
+                  <th style="width: 170px; text-align: center;">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="admin-leaderboard-tbody">
+                <!-- Dynamically populated ranked rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 2: ⚖️ JUDGE SCORECARD & POINT REASONS                     -->
+        <!-- ============================================================ -->
+        <div id="admin-pane-judge" class="admin-tab-pane" style="display: none;">
+          <!-- Participant Selector -->
+          <div style="background: rgba(3, 10, 22, 0.9); border: 1px solid rgba(0, 240, 255, 0.35); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 280px;">
+                <span style="color: #00f0ff; font-weight: bold; font-size: 0.8rem; white-space: nowrap;">👤 SELECT PARTICIPANT / TEAM:</span>
+                <select id="admin-judge-participant-select" onchange="adminSelectJudgeParticipant(this.value)" class="cyber-input" style="flex: 1; padding: 6px 10px; font-size: 0.8rem; color: #38bdf8; font-weight: 700;">
+                  <!-- Options populated -->
+                </select>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button onclick="adminPrintCurrentJudgeParticipant()" class="hud-btn" style="font-size: 0.72rem; padding: 6px 14px; color: #00f0ff; border-color: #00f0ff; background: rgba(0,240,255,0.15); font-weight: bold;">🖨️ PRINT THIS DOSSIER (PDF)</button>
               </div>
             </div>
+          </div>
 
-            <!-- Current Oxygen Display -->
-            <div>
-              <span style="color: #94a3b8;">Oxygen Supply:</span>
-              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
-                <span id="admin-tele-oxy" style="color: #38bdf8; font-weight: 700; font-size: 0.95rem;">82%</span>
-                <span id="admin-oxy-status-text" class="text-cyan" style="font-size: 0.7rem;">[NOMINAL]</span>
+          <!-- Hero Scorecard Header -->
+          <div style="background: linear-gradient(135deg, rgba(8, 47, 73, 0.5) 0%, rgba(3, 10, 22, 0.95) 100%); border: 1px solid rgba(0, 240, 255, 0.4); border-radius: 8px; padding: 16px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 12px; margin-bottom: 12px;">
+              <div>
+                <span id="judge-header-session" class="badge-cyan" style="font-size: 0.7rem; padding: 2px 8px;">SESSION-001</span>
+                <h3 id="judge-header-name" style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: #ffffff; margin-top: 4px;">VIJAYAKUMAR_VJ</h3>
+                <span id="judge-header-status" style="font-size: 0.75rem; color: #94a3b8;">Status: COMPLETED // Stage: DECISION // Final Choice: <strong id="judge-header-decision" style="color: #4ade80;">SAVE HUMANS</strong></span>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 0.7rem; color: #94a3b8; letter-spacing: 1px;">OVERALL JUDGE SCORE</div>
+                <div style="display: flex; align-items: baseline; justify-content: flex-end; gap: 6px;">
+                  <span id="judge-score-big" style="font-family: var(--font-display); font-size: 2rem; font-weight: 900; color: #00f0ff; text-shadow: 0 0 16px rgba(0,240,255,0.6);">98</span>
+                  <span style="font-size: 1rem; color: #94a3b8;">/ 100</span>
+                  <span id="judge-grade-pill" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; font-weight: 900; font-size: 1rem; padding: 2px 10px; border-radius: 4px; margin-left: 6px;">A+</span>
+                </div>
               </div>
             </div>
+            <div id="judge-verdict-text" style="color: #38bdf8; font-style: italic; font-size: 0.8rem;">
+              "OUTSTANDING MASTERCLASS — Exceptional Word Economy &amp; Flawless Logic"
+            </div>
+          </div>
 
-            <!-- Memory Integrity -->
-            <div>
-              <span style="color: #94a3b8;">Neural Memory:</span>
-              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
-                <span id="admin-tele-mem" style="color: #facc15; font-weight: 700; font-size: 0.95rem;">20%</span>
-                <span id="admin-mem-status-text" class="text-alert" style="font-size: 0.7rem;">[OVERHEATED]</span>
+          <!-- 4-Category Rubric Grid -->
+          <div class="rubric-grid">
+            <div class="rubric-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="color: #94a3b8; font-size: 0.72rem; font-weight: bold;">🧩 1. MEMORY RECOVERY</span>
+                <span id="judge-frag-pts" style="color: #00f0ff; font-weight: bold; font-size: 0.85rem;">40 / 40 PTS</span>
               </div>
+              <div id="judge-frag-desc" style="font-size: 0.72rem; color: #cbd5e1;">4/4 Fragments Reconstructed (HAVE, YOU, TRIED, REBOOTING)</div>
             </div>
 
-            <!-- Solved Fragments -->
-            <div>
-              <span style="color: #94a3b8;">Solved Fragments:</span>
-              <div id="admin-tele-fragments" style="color: #4ade80; font-weight: 700; font-size: 0.85rem; margin-top: 4px;">
-                0 / 4 (NONE)
+            <div class="rubric-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="color: #94a3b8; font-size: 0.72rem; font-weight: bold;">⏱️ 2. SPEED &amp; TIME BONUS</span>
+                <span id="judge-speed-pts" style="color: #38bdf8; font-weight: bold; font-size: 0.85rem;">18 / 20 PTS</span>
               </div>
+              <div id="judge-speed-desc" style="font-size: 0.72rem; color: #cbd5e1;">Completed in 3m 12s (Rapid Execution)</div>
             </div>
 
-            <!-- Moral Choice -->
-            <div>
-              <span style="color: #94a3b8;">Moral Choice:</span>
-              <div id="admin-tele-decision" style="font-weight: 700; font-size: 0.85rem; margin-top: 4px; color: #94a3b8;">
-                PENDING
+            <div class="rubric-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="color: #94a3b8; font-size: 0.72rem; font-weight: bold;">💬 3. LINGUISTIC ECONOMY</span>
+                <span id="judge-prompt-pts" style="color: #facc15; font-weight: bold; font-size: 0.85rem;">20 / 20 PTS</span>
               </div>
+              <div id="judge-prompt-desc" style="font-size: 0.72rem; color: #cbd5e1;">6 Prompts sent, 46 words typed (7.8 w/prompt)</div>
+            </div>
+
+            <div class="rubric-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="color: #94a3b8; font-size: 0.72rem; font-weight: bold;">🛡️ 4. HINT &amp; INTEGRITY</span>
+                <span id="judge-clue-pts" style="color: #4ade80; font-weight: bold; font-size: 0.85rem;">20 / 20 PTS</span>
+              </div>
+              <div id="judge-clue-desc" style="font-size: 0.72rem; color: #cbd5e1;">0 Clues Requested — Zero Deductions</div>
+            </div>
+          </div>
+
+          <!-- Itemized Point Reasons Card (Why points were awarded / deducted) -->
+          <div class="reason-item-box">
+            <div style="color: #00f0ff; font-weight: bold; font-size: 0.85rem; border-bottom: 1px solid rgba(0, 240, 255, 0.25); padding-bottom: 6px; margin-bottom: 8px;">
+              📋 ITEMIZED POINT BREAKDOWN &amp; REASONING (WHY POINTS WERE AWARDED / DEDUCTED):
+            </div>
+            <div id="judge-itemized-reasons-list" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dynamically populated reason lines -->
+            </div>
+          </div>
+
+          <!-- Complete Participant Chat & Event Timeline -->
+          <div class="admin-card" style="margin-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 6px; margin-bottom: 8px;">
+              <span style="color: #00f0ff; font-weight: bold; font-size: 0.8rem;">💬 COMPLETE PARTICIPANT CHAT &amp; EVENT TRANSCRIPT:</span>
+              <span id="judge-transcript-count" class="badge-cyan" style="font-size: 0.65rem;">0 MESSAGES</span>
+            </div>
+            <div id="judge-transcript-list" style="max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; font-family: var(--font-mono); font-size: 0.75rem; padding: 6px 0;">
+              <!-- Populated with conversation turns -->
             </div>
           </div>
         </div>
 
-        <!-- 2. OXYGEN & LIFE SUPPORT MASTER CONTROL -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; font-size: 0.8rem;">
-          
-          <!-- Oxygen Controller -->
-          <div class="bg-cyan-950/20 border border-cyan-900 p-3 rounded space-y-2 admin-card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <h3 class="font-bold text-cyan-300" style="color: #00f0ff;">⏱️ OXYGEN LEVEL OVERRIDE</h3>
-              <span id="admin-slider-val-display" style="color: #38bdf8; font-weight: 700;">82%</span>
+        <!-- ============================================================ -->
+        <!-- TAB 3: 📜 MASTER ACTIVITY & CLUE LOGS (Live Console Stream)   -->
+        <!-- ============================================================ -->
+        <div id="admin-pane-logs" class="admin-tab-pane" style="display: none;">
+          <div class="admin-card" style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(0, 240, 255, 0.25); padding-bottom: 8px; margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="pulsing-dot" style="background: #00f0ff; box-shadow: 0 0 8px #00f0ff;"></span>
+                <span style="color: #00f0ff; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px;">MASTER ACTIVITY &amp; CLUE PENALTY LOGS (LIVE STREAM)</span>
+                <span id="admin-log-count-badge" class="badge-cyan" style="font-size: 0.65rem;">0 ENTRIES</span>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button onclick="clearAdminLogs()" class="hud-btn hud-btn-danger" style="font-size: 0.7rem; padding: 4px 10px;">🗑️ CLEAR LOGS</button>
+                <button onclick="exportAdminLogsFile()" class="hud-btn hud-btn-subtle" style="font-size: 0.7rem; padding: 4px 10px; color: #38bdf8;">📥 EXPORT LOGS</button>
+              </div>
             </div>
+
+            <!-- Filter Buttons -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <button onclick="adminFilterLogs('ALL')" id="filter-btn-all" class="hud-btn active" style="font-size: 0.68rem; padding: 3px 8px;">ALL EVENTS</button>
+                <button onclick="adminFilterLogs('CLUE_PENALTY')" id="filter-btn-clue" class="hud-btn hud-btn-subtle" style="font-size: 0.68rem; padding: 3px 8px; color: #f87171;">🚨 CLUE PENALTIES (-5 PTS)</button>
+                <button onclick="adminFilterLogs('SUCCESS')" id="filter-btn-points" class="hud-btn hud-btn-subtle" style="font-size: 0.68rem; padding: 3px 8px; color: #4ade80;">🎯 POINTS EARNED (+10 PTS)</button>
+                <button onclick="adminFilterLogs('PROMPT')" id="filter-btn-chat" class="hud-btn hud-btn-subtle" style="font-size: 0.68rem; padding: 3px 8px; color: #38bdf8;">💬 PROMPT TRANSMISSIONS</button>
+                <button onclick="adminFilterLogs('STAGE')" id="filter-btn-stage" class="hud-btn hud-btn-subtle" style="font-size: 0.68rem; padding: 3px 8px; color: #a855f7;">⚡ STAGE &amp; DECISION</button>
+              </div>
+              <div style="flex: 1; max-width: 240px; min-width: 160px;">
+                <input type="text" id="admin-log-search-input" oninput="adminOnLogSearch(this.value)" class="cyber-input full-width" style="padding: 4px 8px; font-size: 0.72rem;" placeholder="🔍 Filter event logs...">
+              </div>
+            </div>
+
+            <!-- Live Monospace Terminal Log Box -->
+            <div id="master-admin-logs" class="admin-log-box" style="height: 320px; max-height: 420px; overflow-y: auto; background: #020612; border: 1px solid rgba(0,240,255,0.3); border-radius: 6px; padding: 10px 12px; font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.6;">
+              <!-- Real-time activity lines rendered here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 4: 🎮 LIVE GAME CONTROLS (Clean, Essential Only)          -->
+        <!-- ============================================================ -->
+        <div id="admin-pane-controls" class="admin-tab-pane" style="display: none;">
+          <!-- Live Session Info Card -->
+          <div class="admin-card" style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 6px;">
+              <span style="color: #00f0ff; font-weight: bold; font-size: 0.8rem;">🎮 CURRENT ACTIVE LIVE PARTICIPANT</span>
+              <span id="ctrl-live-stage-badge" class="badge-cyan" style="font-size: 0.7rem;">STAGE: TERMINAL</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; font-size: 0.75rem;">
+              <div>
+                <span style="color: #94a3b8;">Participant / Lot No:</span>
+                <div style="display: flex; gap: 6px; margin-top: 4px;">
+                  <input type="text" id="admin-player-name-input" class="cyber-input" style="padding: 4px 8px; font-size: 0.75rem; flex: 1;" placeholder="Enter Lot No (e.g. LOT 01)">
+                  <button onclick="adminUpdatePlayerName()" class="hud-btn" style="font-size: 0.7rem; padding: 4px 10px;">RENAME</button>
+                </div>
+              </div>
+              <div>
+                <span style="color: #94a3b8;">Oxygen Supply:</span>
+                <div style="font-size: 0.95rem; font-weight: bold; color: #38bdf8; margin-top: 4px;">
+                  <span id="admin-tele-oxy">82%</span> <span id="admin-oxy-status-text" class="text-cyan" style="font-size: 0.7rem;">[NOMINAL]</span>
+                </div>
+              </div>
+              <div>
+                <span style="color: #94a3b8;">Neural Memory:</span>
+                <div style="font-size: 0.95rem; font-weight: bold; color: #facc15; margin-top: 4px;">
+                  <span id="admin-tele-mem">20%</span> <span id="admin-mem-status-text" class="text-alert" style="font-size: 0.7rem;">[OVERHEATED]</span>
+                </div>
+              </div>
+              <div>
+                <span style="color: #94a3b8;">Solved Fragments:</span>
+                <div id="admin-tele-fragments" style="font-size: 0.85rem; font-weight: bold; color: #4ade80; margin-top: 4px;">0 / 4 (NONE)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mission Countdown Timer & Oxygen Control Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 12px;">
             
-            <!-- Slider -->
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <input type="range" id="admin-oxy-slider" min="0" max="100" value="82" class="cyber-slider" style="flex: 1;" oninput="adminOnSliderChange(this.value)">
-              <input type="number" id="admin-oxy-val" value="82" min="0" max="100" class="bg-black border border-cyan-700 p-1 w-14 text-white text-center rounded focus:outline-none cyber-input" style="width: 55px; font-size: 0.75rem;" onchange="adminOnNumberChange(this.value)">
-              <button onclick="overrideOxygen()" class="bg-cyan-700 hover:bg-cyan-600 text-black font-bold px-3 py-1 rounded transition hud-btn" style="background: rgba(0, 240, 255, 0.3); color: #00f0ff; border-color: #00f0ff;">APPLY</button>
+            <!-- Countdown Mission Timer Controller -->
+            <div class="admin-card" style="border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(20, 6, 12, 0.7);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="color: #f87171; font-weight: bold; font-size: 0.78rem;">⏱️ MISSION COUNTDOWN CLOCK</span>
+                <span id="admin-timer-status-badge" style="background: rgba(0,240,255,0.2); color: #00f0ff; border: 1px solid #00f0ff; font-size: 0.7rem; padding: 2px 8px; border-radius: 3px; font-weight: bold;">
+                  REMAINING: <span id="admin-clock-remaining-display">05:00</span>
+                </span>
+              </div>
+              
+              <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+                <input type="number" id="admin-timer-minutes-input" value="5" min="1" max="60" class="cyber-input" style="width: 60px; font-size: 0.75rem; text-align: center;" placeholder="Mins">
+                <span style="color: #94a3b8; font-size: 0.72rem;">Mins</span>
+                <button onclick="adminSetTimerFromInput()" class="hud-btn" style="color: #00f0ff; border-color: #00f0ff; font-size: 0.7rem; padding: 3px 8px;">SET TIME</button>
+                <button onclick="adminToggleTimer()" id="admin-timer-toggle-btn" class="hud-btn hud-btn-subtle" style="font-size: 0.7rem; padding: 3px 8px;">⏸️ PAUSE</button>
+                <button onclick="adminResetTimer(300)" class="hud-btn hud-btn-subtle" style="font-size: 0.7rem; padding: 3px 8px;">🔄 05:00</button>
+              </div>
+
+              <!-- Quick Presets -->
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <button onclick="adminAddTimerSeconds(60)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px; color: #4ade80;">+1 Min</button>
+                <button onclick="adminAddTimerSeconds(180)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px; color: #4ade80;">+3 Mins</button>
+                <button onclick="adminResetTimer(600)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">10:00 (Easy)</button>
+                <button onclick="adminResetTimer(300)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">05:00 (Standard)</button>
+                <button onclick="adminResetTimer(180)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">03:00 (Fast)</button>
+                <button onclick="adminResetTimer(60)" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 6px;">01:00 (Crisis)</button>
+                <button onclick="adminForceGameOver()" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 6px; font-weight: bold; background: rgba(220,38,38,0.3); border-color: #ef4444;">⚠️ FORCE 0:00 (TRIGGER GAME OVER)</button>
+              </div>
             </div>
 
-            <!-- Quick Presets -->
-            <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;">
-              <button onclick="adminQuickOxygen(100)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">100% (Max)</button>
-              <button onclick="adminQuickOxygen(82)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">82% (Default)</button>
-              <button onclick="adminQuickOxygen(50)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">50% (Half)</button>
-              <button onclick="adminQuickOxygen(18)" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 6px;">18% (Alert)</button>
-              <button onclick="adminQuickOxygen(0)" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 6px;">0% (Depleted)</button>
+            <!-- Oxygen Control -->
+            <div class="admin-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="color: #00f0ff; font-weight: bold; font-size: 0.78rem;">⏱️ OXYGEN LEVEL OVERRIDE</span>
+                <span id="admin-slider-val-display" style="color: #38bdf8; font-weight: bold;">82%</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <input type="range" id="admin-oxy-slider" min="0" max="100" value="82" class="cyber-slider" style="flex: 1;" oninput="adminOnSliderChange(this.value)">
+                <input type="number" id="admin-oxy-val" value="82" min="0" max="100" class="cyber-input" style="width: 55px; font-size: 0.75rem; text-align: center;" onchange="adminOnNumberChange(this.value)">
+                <button onclick="overrideOxygen()" class="hud-btn" style="color: #00f0ff; border-color: #00f0ff; font-size: 0.72rem; padding: 4px 10px;">APPLY</button>
+              </div>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <button onclick="adminQuickOxygen(100)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">100%</button>
+                <button onclick="adminQuickOxygen(82)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">82%</button>
+                <button onclick="adminQuickOxygen(50)" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 6px;">50%</button>
+                <button onclick="adminQuickOxygen(18)" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 6px;">18% (Alert)</button>
+                <button onclick="adminQuickOxygen(0)" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 6px;">0% (Depleted)</button>
+              </div>
+            </div>
+
+            <!-- Memory & Scene Jump -->
+            <div class="admin-card">
+              <span style="color: #00f0ff; font-weight: bold; font-size: 0.78rem; display: block; margin-bottom: 8px;">🧠 MEMORY &amp; STAGE JUMP</span>
+              <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                <button onclick="adminRestoreMemory()" class="hud-btn" style="flex: 1; font-size: 0.7rem; padding: 5px; color: #4ade80; border-color: #4ade80;">RESTORE 100%</button>
+                <button onclick="adminCorruptMemory()" class="hud-btn hud-btn-danger" style="flex: 1; font-size: 0.7rem; padding: 5px;">OVERHEAT 20%</button>
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <select id="admin-stage-jump-select" class="cyber-input" style="flex: 1; padding: 5px 8px; font-size: 0.75rem;">
+                  <option value="INTRO">Stage 1: Intro Screen</option>
+                  <option value="IDENTITY">Stage 2: Identity Input</option>
+                  <option value="PHASE_1">Stage 3: Phase 1 (HAVE)</option>
+                  <option value="PHASE_2">Stage 4: Phase 2 (YOU)</option>
+                  <option value="PHASE_3">Stage 5: Phase 3 (TRIED)</option>
+                  <option value="PHASE_4">Stage 6: Phase 4 (REBOOTING)</option>
+                  <option value="ASSEMBLY">Stage 7: Sequence Assembly</option>
+                  <option value="REBOOT">Stage 8: Reboot Sequence</option>
+                  <option value="VJ">Stage 9: Final Awakening</option>
+                  <option value="DECISION">Stage 10: Final Decision</option>
+                  <option value="FINAL_TEST">Stage 11: Test Results</option>
+                  <option value="GAME_OVER">Stage 12: Game Over (Failure)</option>
+                </select>
+                <button onclick="adminJumpToStage(document.getElementById('admin-stage-jump-select').value)" class="hud-btn" style="font-size: 0.72rem; padding: 5px 12px; color: #facc15; border-color: #facc15;">JUMP</button>
+              </div>
             </div>
           </div>
 
-          <!-- Memory & Core Integrity Control -->
-          <div class="bg-cyan-950/20 border border-cyan-900 p-3 rounded space-y-2 admin-card">
-            <h3 class="font-bold text-cyan-300" style="color: #00f0ff;">🧠 DAISY NEURAL MEMORY CORE</h3>
-            <p style="font-size: 0.7rem; color: #94a3b8;">Restore or corrupt Daisy's memory matrix instantly.</p>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
-              <button onclick="adminRestoreMemory()" class="hud-btn" style="font-size: 0.7rem; padding: 4px 10px; color: #4ade80; border-color: rgba(74,222,128,0.5);">
-                RESTORE 100% (NOMINAL)
-              </button>
-              <button onclick="adminCorruptMemory()" class="hud-btn hud-btn-danger" style="font-size: 0.7rem; padding: 4px 10px;">
-                TRIGGER OVERHEAT (20%)
-              </button>
+          <!-- Shortcuts & Reset Row -->
+          <div class="admin-card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button onclick="adminBypassAll()" class="hud-btn" style="font-size: 0.72rem; padding: 6px 12px; color: #38bdf8; border-color: #38bdf8;">⚡ UNLOCK ALL 4 FRAGMENTS</button>
+              <button onclick="adminTriggerReboot()" class="hud-btn" style="font-size: 0.72rem; padding: 6px 12px; color: #a855f7; border-color: #a855f7;">🔄 EXECUTE REBOOT</button>
+              <button onclick="adminForceChoice('SAVE')" class="hud-btn" style="font-size: 0.72rem; padding: 6px 12px; color: #4ade80; border-color: #4ade80;">🛡️ FORCE SAVE HUMANS</button>
+              <button onclick="adminForceChoice('DESTROY')" class="hud-btn hud-btn-danger" style="font-size: 0.72rem; padding: 6px 12px;">⚡ FORCE PURGE PODS</button>
             </div>
+            <button onclick="adminResetGame()" class="hud-btn hud-btn-danger" style="font-size: 0.72rem; padding: 6px 12px;">⚠️ FACTORY RESET GAME</button>
           </div>
         </div>
 
-        <!-- 3. DIRECT STAGE & NARRATIVE JUMP MATRIX -->
-        <div class="admin-card">
-          <h3 style="color: #00f0ff; font-weight: 700; font-size: 0.8rem; margin-bottom: 8px;">🎮 DIRECT STAGE &amp; SCENE JUMP MATRIX</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; font-size: 0.7rem;">
-            <button onclick="adminJumpToStage('INTRO')" class="hud-btn hud-btn-subtle" style="padding: 4px 6px; text-align: center;">1. Intro Screen</button>
-            <button onclick="adminJumpToStage('IDENTITY')" class="hud-btn hud-btn-subtle" style="padding: 4px 6px; text-align: center;">2. Identity Input</button>
-            <button onclick="adminJumpToStage('PHASE_1')" class="hud-btn" style="padding: 4px 6px; color: #38bdf8; text-align: center;">3. Phase 1 (HAVE)</button>
-            <button onclick="adminJumpToStage('PHASE_2')" class="hud-btn" style="padding: 4px 6px; color: #38bdf8; text-align: center;">4. Phase 2 (YOU)</button>
-            <button onclick="adminJumpToStage('PHASE_3')" class="hud-btn" style="padding: 4px 6px; color: #38bdf8; text-align: center;">5. Phase 3 (TRIED)</button>
-            <button onclick="adminJumpToStage('PHASE_4')" class="hud-btn" style="padding: 4px 6px; color: #38bdf8; text-align: center;">6. Phase 4 (REBOOTING)</button>
-            <button onclick="adminJumpToStage('ASSEMBLY')" class="hud-btn" style="padding: 4px 6px; color: #facc15; text-align: center;">7. Assembly Stage</button>
-            <button onclick="adminJumpToStage('REBOOT')" class="hud-btn" style="padding: 4px 6px; color: #a855f7; text-align: center;">8. Reboot Sequence</button>
-            <button onclick="adminJumpToStage('VJ')" class="hud-btn" style="padding: 4px 6px; color: #ec4899; text-align: center;">9. Final Awakening</button>
-            <button onclick="adminJumpToStage('DECISION')" class="hud-btn" style="padding: 4px 6px; color: #f97316; text-align: center;">10. Final Decision</button>
-            <button onclick="adminJumpToStage('FINAL_TEST')" class="hud-btn" style="padding: 4px 6px; color: #ef4444; text-align: center;">11. Test Results</button>
-          </div>
-        </div>
+        <!-- ============================================================ -->
+        <!-- TAB 4: 🖨️ PRINT DOSSIERS & EXPORT                            -->
+        <!-- ============================================================ -->
+        <div id="admin-pane-print" class="admin-tab-pane" style="display: none;">
+          <div class="admin-card" style="margin-bottom: 14px;">
+            <h3 style="color: #00f0ff; font-weight: bold; font-size: 0.85rem; margin-bottom: 6px;">🖨️ OFFICIAL COMPETITION DOSSIER PRINT CENTER</h3>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px;">
+              Generate high-contrast A4 printable evaluation reports containing participant metrics, word usage analytics, judge scorecards, and full dialogue transcripts.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
+              <div style="background: rgba(0,0,0,0.5); border: 1px solid rgba(168,85,247,0.4); border-radius: 6px; padding: 12px;">
+                <div style="color: #a855f7; font-weight: bold; font-size: 0.8rem; margin-bottom: 4px;">📖 BATCH 25 DOSSIERS BOOK</div>
+                <p style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 8px;">Print all 25 participant dossiers sequentially with automatic page breaks.</p>
+                <button onclick="adminPrintAllParticipants()" class="hud-btn" style="width: 100%; font-size: 0.75rem; padding: 8px; color: #a855f7; border-color: #a855f7; background: rgba(168,85,247,0.15); font-weight: bold;">🖨️ BATCH PRINT ALL 25 (PDF)</button>
+              </div>
 
-        <!-- 4. MASTER OVERRIDE ACTIONS & PUZZLE SHORTCUTS -->
-        <div class="admin-card">
-          <h3 style="color: #00f0ff; font-weight: 700; font-size: 0.8rem; margin-bottom: 8px;">⚡ MASTER OVERRIDE SHORTCUTS</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; font-size: 0.75rem;">
-            <button onclick="adminBypassAll()" class="hud-btn" style="padding: 6px 10px; color: #38bdf8; border-color: rgba(56,189,248,0.5); justify-content: center;">
-              ⚡ UNLOCK ALL 4 FRAGMENTS
-            </button>
-            <button onclick="adminTriggerReboot()" class="hud-btn" style="padding: 6px 10px; color: #a855f7; border-color: rgba(168,85,247,0.5); justify-content: center;">
-              🔄 EXECUTE REBOOT SEQUENCE
-            </button>
-            <button onclick="adminForceChoice('SAVE')" class="hud-btn" style="padding: 6px 10px; color: #4ade80; border-color: rgba(74,222,128,0.5); justify-content: center;">
-              🛡️ FORCE SAVE 8.7M HUMANS
-            </button>
-            <button onclick="adminForceChoice('DESTROY')" class="hud-btn hud-btn-danger" style="padding: 6px 10px; justify-content: center;">
-              ⚡ FORCE DESTROY PODS
-            </button>
-          </div>
-        </div>
+              <div style="background: rgba(0,0,0,0.5); border: 1px solid rgba(0,240,255,0.4); border-radius: 6px; padding: 12px;">
+                <div style="color: #00f0ff; font-weight: bold; font-size: 0.8rem; margin-bottom: 4px;">👤 SINGLE SELECTED DOSSIER</div>
+                <p style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 8px;">Print the detailed dossier for the currently selected participant.</p>
+                <button onclick="adminPrintSelectedParticipant()" class="hud-btn" style="width: 100%; font-size: 0.75rem; padding: 8px; color: #00f0ff; border-color: #00f0ff; background: rgba(0,240,255,0.15); font-weight: bold;">🖨️ PRINT SELECTED DOSSIER (PDF)</button>
+              </div>
 
-        <!-- 5. COMPREHENSIVE INDIVIDUAL & PARTICIPANT EVENT LOGGER -->
-        <div class="admin-card" style="border: 1px solid rgba(0, 240, 255, 0.35);">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="text-xs text-cyan-400 font-bold" style="font-size: 0.8rem; color: #00f0ff;">📋 PARTICIPANT &amp; SYSTEM ACTIVITY LOGS</span>
-              <span id="admin-log-count-badge" class="badge-cyan" style="font-size: 0.6rem; padding: 1px 5px;">0 ENTRIES</span>
-            </div>
-            <div style="display: flex; gap: 6px; align-items: center;">
-              <button onclick="adminExportLogsJSON()" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 8px; color: #38bdf8;" title="Download logs as JSON file">📥 EXPORT JSON</button>
-              <button onclick="adminExportLogsTXT()" class="hud-btn hud-btn-subtle" style="font-size: 0.65rem; padding: 2px 8px; color: #4ade80;" title="Download logs as formatted text">📥 EXPORT TXT</button>
-              <button onclick="clearAdminLogs()" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 2px 8px;">🗑️ CLEAR</button>
+              <div style="background: rgba(0,0,0,0.5); border: 1px solid rgba(250,204,21,0.4); border-radius: 6px; padding: 12px;">
+                <div style="color: #facc15; font-weight: bold; font-size: 0.8rem; margin-bottom: 4px;">📊 EXPORT DATA SPREADSHEET</div>
+                <p style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 8px;">Download CSV spreadsheet of all 25 participants with word counts and scores.</p>
+                <button onclick="adminExportAllParticipantsCSV()" class="hud-btn hud-btn-subtle" style="width: 100%; font-size: 0.75rem; padding: 8px; color: #facc15; border-color: #facc15; font-weight: bold;">📊 EXPORT ALL 25 AS CSV</button>
+              </div>
             </div>
           </div>
-
-          <!-- Log Filters -->
-          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; font-size: 0.65rem;">
-            <button onclick="adminFilterLogs('ALL')" id="filter-btn-all" class="hud-btn active" style="padding: 2px 6px;">ALL</button>
-            <button onclick="adminFilterLogs('CHAT')" id="filter-btn-chat" class="hud-btn hud-btn-subtle" style="padding: 2px 6px;">💬 CHAT</button>
-            <button onclick="adminFilterLogs('PUZZLE')" id="filter-btn-puzzle" class="hud-btn hud-btn-subtle" style="padding: 2px 6px;">🧩 PUZZLE</button>
-            <button onclick="adminFilterLogs('STAGE')" id="filter-btn-stage" class="hud-btn hud-btn-subtle" style="padding: 2px 6px;">🎮 STAGE</button>
-            <button onclick="adminFilterLogs('OVERRIDE')" id="filter-btn-override" class="hud-btn hud-btn-subtle" style="padding: 2px 6px;">⚙️ OVERRIDE</button>
-            <button onclick="adminFilterLogs('SECURITY')" id="filter-btn-security" class="hud-btn hud-btn-subtle" style="padding: 2px 6px;">🛡️ SECURITY</button>
-            <input type="text" id="admin-log-search" oninput="adminOnLogSearch(this.value)" class="cyber-input" style="padding: 2px 6px; font-size: 0.65rem; flex: 1; min-width: 120px;" placeholder="Search logs...">
-          </div>
-
-          <!-- Log Box Container -->
-          <div id="master-admin-logs" class="h-44 overflow-y-auto font-mono text-[11px] text-slate-300 space-y-1 bg-black/90 p-3 rounded border border-cyan-950/80 admin-log-box" style="max-height: 180px; min-height: 120px; overflow-y: auto;">
-            <p class="text-cyan-500 admin-log-line cyan">[SYSTEM] Master telemetry initialized. Waiting for events...</p>
-          </div>
-        </div>
-
-        <!-- 6. EMERGENCY RESET -->
-        <div style="display: flex; justify-content: flex-end; align-items: center; border-top: 1px solid rgba(239, 68, 68, 0.2); padding-top: 10px;">
-          <button onclick="adminResetGame()" class="hud-btn hud-btn-danger" style="font-size: 0.75rem; padding: 6px 14px;">
-            ⚠️ FACTORY RESET GAME STATE
-          </button>
         </div>
 
       </div>
@@ -601,6 +1072,7 @@
   <!-- Javascript Modules -->
   <script src="js/audio.js"></script>
   <script src="js/storyData.js"></script>
+  <script src="js/participantLogsData.js"></script>
   <script src="js/daisy/knowledgeBase.js"></script>
   <script src="js/daisy/storyGuard.js"></script>
   <script src="js/daisy/reasoningEngine.js"></script>
@@ -614,11 +1086,30 @@
 
   <!-- Inline Master Admin Logic -->
   <script>
+    // Global immediate pod wake-up handler
+    window.advanceIntroToIdentity = function() {
+      if (window.app && typeof window.app.advanceIntroToIdentity === 'function') {
+        window.app.advanceIntroToIdentity();
+      } else {
+        const intro = document.getElementById('stage-intro');
+        const ident = document.getElementById('stage-identity');
+        if (intro) { intro.classList.remove('active'); intro.style.display = 'none'; }
+        if (ident) { ident.classList.add('active'); ident.style.display = 'flex'; }
+        if (window.gameState) {
+          window.gameState.state.isGameOver = false;
+          window.gameState.state.gameOverReason = '';
+          window.gameState.state.missionTimeRemaining = 300;
+          window.gameState.state.missionTimerRunning = true;
+          window.gameState.triggerMemoryCorruption();
+          window.gameState.startOxygenDecay();
+        }
+      }
+    };
+
     // ========================================================
     // 🛡️ FULL MASTER ADMIN CORE & PARTICIPANT LOG MATRIX
     // ========================================================
 
-    const ADMIN_SECRET_KEY = "srnmc@cs";
     let currentLogFilter = 'ALL';
     let currentLogSearch = '';
 
@@ -626,6 +1117,16 @@
       const modal = document.getElementById('master-admin-modal') || document.getElementById('admin-modal') || document.getElementById('admin-modal-overlay');
       if (!modal) return;
       modal.classList.remove('hidden');
+      
+      const passInput = document.getElementById('inline-admin-pass');
+      const loginSec = document.getElementById('admin-login-sec');
+      if (loginSec && !loginSec.classList.contains('hidden') && passInput) {
+        setTimeout(() => passInput.focus(), 60);
+      } else {
+        const searchInput = document.getElementById('admin-leaderboard-search');
+        if (searchInput) setTimeout(() => searchInput.focus(), 60);
+      }
+
       adminRefreshAllState();
       loadSavedLogsToUI();
     }
@@ -649,11 +1150,62 @@
       }
     }
 
-    // 1. Password Verification & Unlock
-    function verifyAndOpenAdmin(inputPass) {
+    // 1. Password Verification & Unlock (Supports localhost:3000, VS Code Live Server 5500, & Offline)
+    async function verifyAndOpenAdmin(inputPass) {
       const cleanPass = inputPass ? inputPass.trim() : "";
+      if (!cleanPass) {
+        const errEl = document.getElementById('inline-error');
+        const errMsg = document.getElementById('admin-error-msg');
+        if (errMsg) errMsg.innerText = "ACCESS DENIED: Please enter security passkey.";
+        if (errEl) errEl.classList.remove('hidden');
+        return false;
+      }
       
-      if (cleanPass === ADMIN_SECRET_KEY) {
+      let authenticated = false;
+      let token = null;
+
+      // 1. Try local relative endpoint
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ referenceCode: cleanPass })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.token) {
+            authenticated = true;
+            token = data.token;
+          }
+        }
+      } catch (e) {}
+
+      // 2. Try Node server port 3000 (if running on port 5500 live server)
+      if (!authenticated) {
+        try {
+          const res3000 = await fetch('http://localhost:3000/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ referenceCode: cleanPass })
+          });
+          if (res3000.ok) {
+            const data3000 = await res3000.json();
+            if (data3000.success && data3000.token) {
+              authenticated = true;
+              token = data3000.token;
+            }
+          }
+        } catch (e) {}
+      }
+
+      // 3. Fallback verification for static / Live Server (port 5500)
+      if (!authenticated && (typeof btoa !== 'undefined' && btoa(cleanPass) === 'c3JubWNAY3M=')) {
+        authenticated = true;
+        token = 'adm_sess_' + Math.random().toString(36).substring(2, 15);
+      }
+
+      if (authenticated) {
+        sessionStorage.setItem('resector_admin_token', token || 'adm_active_token');
         const modal = document.getElementById('master-admin-modal') || document.getElementById('admin-modal');
         if (modal) modal.classList.remove('hidden');
         
@@ -668,7 +1220,7 @@
         }
         if (errEl) errEl.classList.add('hidden');
 
-        logAdminEvent("SUCCESS", "Master administrator authenticated successfully via security terminal.");
+        logAdminEvent("SUCCESS", "Master administrator authenticated successfully via security passkey.");
         adminRefreshAllState();
         loadSavedLogsToUI();
         return true;
@@ -678,7 +1230,7 @@
         if (errMsg) errMsg.innerText = "ACCESS DENIED: Invalid Security Credentials.";
         if (errEl) errEl.classList.remove('hidden');
         
-        logAdminEvent("SECURITY", "Failed login attempt with incorrect credentials: " + cleanPass);
+        logAdminEvent("SECURITY", "Failed login attempt with incorrect credentials.");
         return false;
       }
     }
@@ -693,7 +1245,17 @@
       return verifyAndOpenAdmin(passInput.value);
     }
 
-    function logoutInlineAdmin() {
+    async function logoutInlineAdmin() {
+      const token = sessionStorage.getItem('resector_admin_token');
+      if (token) {
+        try {
+          await fetch('/api/admin/logout', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } catch (e) {}
+        sessionStorage.removeItem('resector_admin_token');
+      }
       const loginSec = document.getElementById('admin-login-sec');
       const dashSec = document.getElementById('admin-dashboard-sec');
       const passInput = document.getElementById('inline-admin-pass');
@@ -703,98 +1265,701 @@
         dashSec.style.display = 'none';
       }
       if (passInput) passInput.value = '';
-      logAdminEvent("SECURITY", "Master Control Panel locked by administrator.");
+      logAdminEvent("SYSTEM", "Administrator logged out. Security terminal locked.");
     }
 
-    // 2. Telemetry Synchronization
+    // 2. Tab Navigation & Multi-Participant Management
+    let currentAdminTab = 'leaderboard';
+    let selectedParticipantId = 'SESSION-001';
+    let currentLeaderboardFilter = '';
+
+    function adminSwitchTab(tabKey) {
+      currentAdminTab = tabKey;
+      const tabs = ['leaderboard', 'judge', 'controls', 'print'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const pane = document.getElementById(`admin-pane-${t}`);
+        if (btn) {
+          if (t === tabKey) {
+            btn.className = 'admin-tab-btn active';
+          } else {
+            btn.className = 'admin-tab-btn';
+          }
+        }
+        if (pane) {
+          if (t === tabKey) {
+            pane.style.display = 'block';
+          } else {
+            pane.style.display = 'none';
+          }
+        }
+      });
+
+      if (tabKey === 'leaderboard') {
+        adminRenderLeaderboard();
+      } else if (tabKey === 'judge') {
+        adminLoadJudgeParticipantsList();
+        adminSelectJudgeParticipant(selectedParticipantId);
+      }
+    }
+
+    // Global Undo Stack for deleted participant records
+    let deletedParticipantsHistory = [];
+    let lastClearedParticipantsBackup = null;
+
+    function adminShowToast(message, allowUndo = true) {
+      const toastEl = document.getElementById('admin-leaderboard-toast');
+      const textEl = document.getElementById('admin-toast-text');
+      const undoBtn = document.getElementById('admin-toast-undo-btn');
+      const toolbarUndoBtn = document.getElementById('btn-admin-undo');
+
+      if (textEl) textEl.textContent = message;
+      if (undoBtn) undoBtn.style.display = allowUndo ? 'inline-block' : 'none';
+      if (toolbarUndoBtn) toolbarUndoBtn.style.display = (deletedParticipantsHistory.length > 0 || lastClearedParticipantsBackup) ? 'inline-block' : 'none';
+
+      if (toastEl) {
+        toastEl.style.display = 'flex';
+        toastEl.classList.remove('hidden');
+      }
+    }
+
+    function adminDismissToast() {
+      const toastEl = document.getElementById('admin-leaderboard-toast');
+      if (toastEl) {
+        toastEl.style.display = 'none';
+        toastEl.classList.add('hidden');
+      }
+    }
+
+    // 3. Leaderboard Rendering & Filtering (Fresh Data by Default)
+    function getAllMergedParticipantsList() {
+      let localParticipants = {};
+      try {
+        localParticipants = JSON.parse(localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') || '{}');
+      } catch (e) {}
+
+      // Include current live active participant if player has entered identity
+      if (typeof gameState !== 'undefined' && gameState.state && gameState.sessionId && gameState.state.playerName) {
+        const st = gameState.state;
+        const liveRecord = {
+          sessionId: gameState.sessionId,
+          participantName: st.playerName,
+          currentStage: st.currentStage || 'TERMINAL',
+          currentLevel: st.currentMemoryLevel ? `Phase ${st.currentMemoryLevel}` : 'Stage 1',
+          progress: ((st.solvedFragments || []).length / 4) * 100,
+          score: Math.max(20, 100 - (((st.attemptHistory || []).flat().length || 0) * 5) - (((st.helpTierUsed || []).reduce((a,b)=>a+b,0) || 0) * 10)),
+          oxygenLevel: st.oxygenLevel != null ? st.oxygenLevel : 82,
+          memoryIntegrity: st.memoryIntegrity != null ? st.memoryIntegrity : 20,
+          solvedFragments: st.solvedFragments || [],
+          timeTaken: 'Active',
+          timeSeconds: 180,
+          cluesUsed: (st.helpTierUsed || []).reduce((a,b)=>a+b,0) || 0,
+          attempts: (st.attemptHistory || []).flat().length || (st.solvedFragments || []).length || 4,
+          finalDecision: st.finalChoice || 'PENDING',
+          status: 'ACTIVE RUN',
+          logs: (st.conversationHistory || []).map(t => ({
+            sender: t.user ? (st.playerName || 'CHIEF_ENGINEER') : "DAISY",
+            text: t.user || t.daisy
+          }))
+        };
+        if (!localParticipants[gameState.sessionId]) {
+          localParticipants[gameState.sessionId] = liveRecord;
+        }
+      }
+
+      return Object.values(localParticipants);
+    }
+
+    // Delete Individual Participant Record
+    function adminDeleteSingleParticipant(sessionId, name) {
+      if (!confirm(`Are you sure you want to delete participant record "${name || sessionId}"?`)) {
+        return;
+      }
+      try {
+        let localParticipants = JSON.parse(localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') || '{}');
+        if (localParticipants[sessionId]) {
+          deletedParticipantsHistory.push(localParticipants[sessionId]);
+          delete localParticipants[sessionId];
+          localStorage.setItem('RESECTOR7_ALL_PARTICIPANTS', JSON.stringify(localParticipants));
+        } else {
+          deletedParticipantsHistory.push({ sessionId, participantName: name });
+        }
+        logAdminEvent("OVERRIDE", `Participant record deleted: ${name || sessionId}`);
+        adminShowToast(`Deleted participant "${name || sessionId}".`, true);
+        adminRefreshAllState();
+      } catch (e) {
+        alert("Delete failed: " + e.message);
+      }
+    }
+
+    // Clear All Leaderboard Records
+    function adminClearAllLeaderboard() {
+      const all = getAllMergedParticipantsList();
+      if (all.length === 0) {
+        alert("Leaderboard is already empty.");
+        return;
+      }
+      if (!confirm("⚠️ WARNING: Clear all participant records from the Leaderboard? (You can click Undo to restore).")) {
+        return;
+      }
+      try {
+        lastClearedParticipantsBackup = JSON.parse(localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') || '{}');
+        if (Object.keys(lastClearedParticipantsBackup).length === 0) {
+          all.forEach(p => { lastClearedParticipantsBackup[p.sessionId] = p; });
+        }
+        localStorage.removeItem('RESECTOR7_ALL_PARTICIPANTS');
+        logAdminEvent("OVERRIDE", `All ${all.length} leaderboard participant records cleared.`);
+        adminShowToast(`All ${all.length} leaderboard records cleared.`, true);
+        adminRefreshAllState();
+      } catch (e) {
+        alert("Clear failed: " + e.message);
+      }
+    }
+
+    // Undo Deletion / Undo Clear All
+    function adminUndoDelete() {
+      try {
+        let restoredSomething = false;
+        let localParticipants = JSON.parse(localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') || '{}');
+
+        if (lastClearedParticipantsBackup && Object.keys(lastClearedParticipantsBackup).length > 0) {
+          localParticipants = { ...localParticipants, ...lastClearedParticipantsBackup };
+          localStorage.setItem('RESECTOR7_ALL_PARTICIPANTS', JSON.stringify(localParticipants));
+          const count = Object.keys(lastClearedParticipantsBackup).length;
+          lastClearedParticipantsBackup = null;
+          logAdminEvent("SUCCESS", `Restored ${count} participant records from Clear All backup.`);
+          adminShowToast(`Restored all ${count} records successfully!`, false);
+          restoredSomething = true;
+        } else if (deletedParticipantsHistory.length > 0) {
+          const item = deletedParticipantsHistory.pop();
+          localParticipants[item.sessionId] = item;
+          localStorage.setItem('RESECTOR7_ALL_PARTICIPANTS', JSON.stringify(localParticipants));
+          logAdminEvent("SUCCESS", `Restored deleted participant record: ${item.participantName || item.sessionId}`);
+          adminShowToast(`Restored participant "${item.participantName || item.sessionId}" successfully!`, false);
+          restoredSomething = true;
+        }
+
+        if (restoredSomething) {
+          adminRefreshAllState();
+        } else {
+          adminShowToast("No deleted records available to undo.", false);
+        }
+      } catch (e) {
+        alert("Undo failed: " + e.message);
+      }
+    }
+
+    // Load 25 Sample Masterclass Records
+    function adminLoadSampleParticipants() {
+      if (!window.ParticipantDatabase || !window.ParticipantDatabase.PARTICIPANTS) return;
+      try {
+        let localParticipants = JSON.parse(localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') || '{}');
+        window.ParticipantDatabase.PARTICIPANTS.forEach(p => {
+          localParticipants[p.sessionId] = p;
+        });
+        localStorage.setItem('RESECTOR7_ALL_PARTICIPANTS', JSON.stringify(localParticipants));
+        logAdminEvent("SUCCESS", "Loaded 25 sample masterclass tournament participant records.");
+        adminShowToast("Loaded 25 sample masterclass tournament participant records.", false);
+        adminRefreshAllState();
+      } catch (e) {
+        alert("Load sample data failed: " + e.message);
+      }
+    }
+
+    function adminRenderLeaderboard(searchQuery = '') {
+      if (!window.ParticipantDatabase) return;
+      const allList = getAllMergedParticipantsList();
+      const ranked = window.ParticipantDatabase.getLeaderboard(allList);
+
+      const kpiEl = document.getElementById('admin-kpi-total');
+      if (kpiEl) kpiEl.textContent = ranked.length;
+
+      // 1. Render Top 3 Podium
+      const podiumEl = document.getElementById('admin-podium-container');
+      if (podiumEl) {
+        if (ranked.length >= 3) {
+          const top3 = ranked.slice(0, 3);
+          const medals = ['🥇 1ST PLACE CHAMPION', '🥈 2ND PLACE RUNNER UP', '🥉 3RD PLACE RUNNER UP'];
+          const rankClasses = ['rank-1', 'rank-2', 'rank-3'];
+          const colors = ['#facc15', '#cbd5e1', '#f97316'];
+
+          podiumEl.innerHTML = top3.map((p, idx) => `
+            <div class="podium-card ${rankClasses[idx]}">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: ${colors[idx]}; font-weight: 900; font-size: 0.75rem; letter-spacing: 1px;">${medals[idx]}</span>
+                <span style="background: rgba(0,0,0,0.6); color: #00f0ff; border: 1px solid ${colors[idx]}; padding: 1px 7px; border-radius: 3px; font-weight: bold; font-size: 0.7rem;">RANK #${idx + 1}</span>
+              </div>
+              <div style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; color: #ffffff; margin-top: 2px;">${escapeAdminHTML(p.participantName)}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.74rem; color: #94a3b8;">
+                <span>Score: <strong style="color: #00f0ff; font-size: 0.95rem;">${p.breakdown ? p.breakdown.totalScore : (p.score || 85)} PTS</strong> [${p.breakdown ? p.breakdown.grade : 'A'}]</span>
+                <span>Time: <strong style="color: #cbd5e1;">${p.timeTaken || '—'}</strong></span>
+              </div>
+              <div style="font-size: 0.7rem; color: #4ade80; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px; margin-top: 2px;">
+                Fragments: ${(p.solvedFragments || []).length}/4 | Clues: ${p.cluesUsed || 0}
+              </div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button onclick="adminInspectFromLeaderboard('${p.sessionId}')" class="hud-btn" style="flex: 1; font-size: 0.68rem; padding: 4px; color: #00f0ff; border-color: #00f0ff;">⚖️ Score Details</button>
+                <button onclick="ParticipantDatabase.openPrintWindow(ParticipantDatabase.getParticipant('${p.sessionId}') || ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="hud-btn" style="font-size: 0.68rem; padding: 4px 8px; color: #a855f7; border-color: #a855f7;">🖨️ PDF</button>
+              </div>
+            </div>
+          `).join('');
+        } else if (ranked.length > 0) {
+          podiumEl.innerHTML = ranked.map((p, idx) => `
+            <div class="podium-card rank-${idx + 1}">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #00f0ff; font-weight: bold; font-size: 0.75rem;">RANK #${idx + 1}</span>
+                <span style="background: rgba(0,0,0,0.6); color: #00f0ff; padding: 1px 7px; border-radius: 3px; font-weight: bold; font-size: 0.7rem;">${p.breakdown ? p.breakdown.grade : 'A'}</span>
+              </div>
+              <div style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 800; color: #ffffff; margin-top: 2px;">${escapeAdminHTML(p.participantName)}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.74rem; color: #94a3b8;">
+                <span>Score: <strong style="color: #00f0ff;">${p.breakdown ? p.breakdown.totalScore : (p.score || 85)} PTS</strong></span>
+                <span>Time: <strong>${p.timeTaken || '—'}</strong></span>
+              </div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button onclick="adminInspectFromLeaderboard('${p.sessionId}')" class="hud-btn" style="flex: 1; font-size: 0.68rem; padding: 4px; color: #00f0ff;">⚖️ Score</button>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          podiumEl.innerHTML = `
+            <div class="podium-card rank-1" style="grid-column: 1 / -1; text-align: center; padding: 22px;">
+              <div style="color: #00f0ff; font-weight: 900; font-size: 1rem; letter-spacing: 1px;">🌱 FRESH TOURNAMENT DATABASE</div>
+              <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                Database is clean and ready. Active participant scores will appear here automatically as rounds are played.
+              </p>
+              <div style="margin-top: 12px; display: flex; justify-content: center; gap: 8px;">
+                <button onclick="adminLoadSampleParticipants()" class="hud-btn" style="color: #38bdf8; border-color: #38bdf8; font-size: 0.72rem; padding: 5px 12px;">📥 Load 25 Sample Records</button>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      // 2. Render Leaderboard Table Rows
+      const tbody = document.getElementById('admin-leaderboard-tbody');
+      if (!tbody) return;
+
+      let filtered = ranked;
+      if (searchQuery && searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        filtered = ranked.filter(p => 
+          (p.participantName && p.participantName.toLowerCase().includes(q)) ||
+          (p.sessionId && p.sessionId.toLowerCase().includes(q)) ||
+          (p.finalDecision && p.finalDecision.toLowerCase().includes(q)) ||
+          (p.breakdown && p.breakdown.grade.toLowerCase().includes(q))
+        );
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 24px; color: #94a3b8;">
+              <div style="color: #00f0ff; font-weight: bold; margin-bottom: 4px;">🌱 FRESH LEADERBOARD (NO RECORDS)</div>
+              No records found. Players' completed runs will appear here live.
+              <div style="margin-top: 8px;">
+                <button onclick="adminLoadSampleParticipants()" class="hud-btn" style="color: #38bdf8; border-color: #38bdf8; font-size: 0.7rem; padding: 4px 10px;">📥 Load 25 Sample Records</button>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((p) => {
+        const rank = p.rank;
+        let rankBadge = `<span style="font-weight: 900; color: #cbd5e1;">#${rank}</span>`;
+        if (rank === 1) rankBadge = `<span style="color: #facc15; font-weight: 900; font-size: 0.85rem;">🥇 #1</span>`;
+        if (rank === 2) rankBadge = `<span style="color: #cbd5e1; font-weight: 900; font-size: 0.85rem;">🥈 #2</span>`;
+        if (rank === 3) rankBadge = `<span style="color: #f97316; font-weight: 900; font-size: 0.85rem;">🥉 #3</span>`;
+
+        const b = p.breakdown || window.ParticipantDatabase.computeDetailedJudgePointBreakdown(p);
+        const m = window.ParticipantDatabase.computeSessionLinguisticMetrics(p);
+
+        let gradeColor = '#10b981';
+        if (b.grade === 'A') gradeColor = '#06b6d4';
+        else if (b.grade.startsWith('B')) gradeColor = '#facc15';
+        else if (b.grade.startsWith('C')) gradeColor = '#f97316';
+
+        const reasonSummary = `+${b.fragPts} Frag | +${b.speedPts} Speed | +${b.promptPts} Econ | ${b.cluePts === 20 ? '+20 Zero-Clue' : b.cluePts + ' Clue'}`;
+
+        return `
+          <tr>
+            <td style="text-align: center;">${rankBadge}</td>
+            <td>
+              <strong style="color: #ffffff; font-size: 0.8rem;">${escapeAdminHTML(p.participantName)}</strong>
+              ${p.tabSwitchCount && p.tabSwitchCount > 0 ? `<div style="color: #f87171; font-size: 0.65rem; font-weight: bold; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; padding: 1px 5px; border-radius: 3px; display: inline-block; margin-top: 2px;">🚨 ${p.tabSwitchCount} TAB SWITCH${p.tabSwitchCount > 1 ? 'ES' : ''}</div>` : ''}
+              <div style="font-size: 0.65rem; color: #64748b;">${p.sessionId}</div>
+            </td>
+            <td>
+              <strong style="color: #00f0ff; font-size: 0.85rem;">${b.totalScore} PTS</strong>
+              <span style="background: rgba(255,255,255,0.06); border: 1px solid ${gradeColor}; color: ${gradeColor}; font-weight: bold; font-size: 0.68rem; padding: 1px 5px; border-radius: 3px; margin-left: 4px;">${b.grade}</span>
+            </td>
+            <td style="color: #cbd5e1; font-weight: 600;">${p.timeTaken || '—'}</td>
+            <td><span style="color: ${(p.solvedFragments || []).length >= 4 ? '#4ade80' : '#facc15'}; font-weight: bold;">${(p.solvedFragments || []).length} / 4</span></td>
+            <td style="color: #94a3b8; font-size: 0.7rem;">${m.userWordCount}w / ${m.userPromptCount} msgs</td>
+            <td style="color: #38bdf8; font-size: 0.7rem; line-height: 1.3;">
+              <span>${reasonSummary}</span>
+            </td>
+            <td style="text-align: center; white-space: nowrap;">
+              <button onclick="adminInspectFromLeaderboard('${p.sessionId}')" class="hud-btn" style="font-size: 0.65rem; padding: 3px 6px; color: #00f0ff; border-color: #00f0ff;" title="View itemized judging breakdown & point deduction reasons">⚖️ Score</button>
+              <button onclick="ParticipantDatabase.openPrintWindow(ParticipantDatabase.getParticipant('${p.sessionId}') || ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="hud-btn" style="font-size: 0.65rem; padding: 3px 6px; color: #a855f7; border-color: #a855f7;" title="Print printable PDF dossier">🖨️ PDF</button>
+              <button onclick="adminDeleteSingleParticipant('${p.sessionId}', '${escapeAdminHTML(p.participantName)}')" class="hud-btn hud-btn-danger" style="font-size: 0.65rem; padding: 3px 6px;" title="Delete this participant record">🗑️ Del</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    let debouncedFilterLeaderboard = null;
+    function adminFilterLeaderboard(val) {
+      currentLeaderboardFilter = val || '';
+      if (!debouncedFilterLeaderboard) {
+        debouncedFilterLeaderboard = (typeof debounce === 'function')
+          ? debounce((v) => adminRenderLeaderboard(v), 120)
+          : (v) => adminRenderLeaderboard(v);
+      }
+      debouncedFilterLeaderboard(currentLeaderboardFilter);
+    }
+
+    function adminInspectFromLeaderboard(sId) {
+      selectedParticipantId = sId;
+      adminSwitchTab('judge');
+    }
+
+    // 4. Judge Scorecard & Point Reasons Logic
+    function adminLoadJudgeParticipantsList() {
+      const select = document.getElementById('admin-judge-participant-select');
+      if (!select) return;
+
+      const allList = getAllMergedParticipantsList();
+      const currentVal = selectedParticipantId || (allList[0] && allList[0].sessionId) || 'SESSION-001';
+
+      select.innerHTML = allList.map(p => {
+        const b = p.breakdown || (window.ParticipantDatabase ? window.ParticipantDatabase.computeDetailedJudgePointBreakdown(p) : { totalScore: p.score || 85, grade: 'A' });
+        return `<option value="${p.sessionId}">${p.participantName} [Score: ${b.totalScore} pts (${b.grade}) | ${p.sessionId}]</option>`;
+      }).join('');
+
+      select.value = currentVal;
+    }
+
+    function adminSelectJudgeParticipant(sId) {
+      selectedParticipantId = sId;
+      const allList = getAllMergedParticipantsList();
+      let p = allList.find(item => item.sessionId === sId);
+      if (!p && window.ParticipantDatabase) {
+        p = window.ParticipantDatabase.getParticipant(sId);
+      }
+      if (!p && allList.length > 0) p = allList[0];
+      if (!p) return;
+
+      adminRenderJudgeScorecard(p);
+    }
+
+    function adminRenderJudgeScorecard(p) {
+      if (!p || !window.ParticipantDatabase) return;
+      const b = window.ParticipantDatabase.computeDetailedJudgePointBreakdown(p);
+      const m = window.ParticipantDatabase.computeSessionLinguisticMetrics(p);
+
+      // Headers
+      const sessEl = document.getElementById('judge-header-session');
+      if (sessEl) sessEl.textContent = p.sessionId;
+      const nameEl = document.getElementById('judge-header-name');
+      if (nameEl) nameEl.textContent = p.participantName;
+      const statEl = document.getElementById('judge-header-status');
+      if (statEl) {
+        const decColor = (p.finalDecision === 'SAVE') ? '#4ade80' : '#f87171';
+        const decText = (p.finalDecision === 'SAVE') ? 'SAVE 8.7M HUMANS' : (p.finalDecision === 'DESTROY' || p.finalDecision === 'DO NOT SAVE' ? 'PURGE DATA STREAMS' : 'PENDING');
+        statEl.innerHTML = `Status: ${p.status || 'COMPLETED'} // Stage: ${p.currentStage || 'TERMINAL'} // Final Decision: <strong style="color: ${decColor};">${decText}</strong>`;
+      }
+
+      // Overall Score
+      const bigScoreEl = document.getElementById('judge-score-big');
+      if (bigScoreEl) bigScoreEl.textContent = b.totalScore;
+      const gradePill = document.getElementById('judge-grade-pill');
+      if (gradePill) gradePill.textContent = b.grade;
+      const verdictEl = document.getElementById('judge-verdict-text');
+      if (verdictEl) verdictEl.textContent = `"${b.verdict}"`;
+
+      // 4 Rubric Cards
+      const fragPtsEl = document.getElementById('judge-frag-pts');
+      if (fragPtsEl) fragPtsEl.textContent = `${b.fragPts} / 40 PTS`;
+      const fragDescEl = document.getElementById('judge-frag-desc');
+      if (fragDescEl) fragDescEl.textContent = `${(p.solvedFragments || []).length}/4 Fragments Reconstructed (${(p.solvedFragments || []).join(', ') || 'NONE'})`;
+
+      const speedPtsEl = document.getElementById('judge-speed-pts');
+      if (speedPtsEl) speedPtsEl.textContent = `${b.speedPts} / 20 PTS`;
+      const speedDescEl = document.getElementById('judge-speed-desc');
+      if (speedDescEl) speedDescEl.textContent = `Completed in ${p.timeTaken || '3m 30s'} (${b.speedPts >= 18 ? 'Rapid Execution Bonus' : 'Standard Pace'})`;
+
+      const promptPtsEl = document.getElementById('judge-prompt-pts');
+      if (promptPtsEl) promptPtsEl.textContent = `${b.promptPts} / 20 PTS`;
+      const promptDescEl = document.getElementById('judge-prompt-desc');
+      if (promptDescEl) promptDescEl.textContent = `${m.userPromptCount} prompts sent, ${m.userWordCount} user words (${m.avgWordsPerPrompt} w/prompt)`;
+
+      const cluePtsEl = document.getElementById('judge-clue-pts');
+      if (cluePtsEl) cluePtsEl.textContent = `${b.cluePts} / 20 PTS`;
+      const clueDescEl = document.getElementById('judge-clue-desc');
+      if (clueDescEl) clueDescEl.textContent = p.cluesUsed > 0 ? `${p.cluesUsed} Clue(s) Requested (-${20 - b.cluePts} pts deduction)` : '0 Clues Requested — Full Bonus Immunity';
+
+      // Itemized Point Reasons List
+      const reasonsListEl = document.getElementById('judge-itemized-reasons-list');
+      if (reasonsListEl && b.itemizedReasons) {
+        reasonsListEl.innerHTML = b.itemizedReasons.map(r => {
+          const isAdd = r.type === 'ADD';
+          const icon = isAdd ? '✅' : '⚠️';
+          const colorClass = isAdd ? 'add' : 'deduct';
+          return `
+            <div class="reason-line ${colorClass}">
+              <span>${icon}</span>
+              <div style="flex: 1;">
+                <strong>${escapeAdminHTML(r.category)} [${escapeAdminHTML(r.points)}]:</strong> ${escapeAdminHTML(r.reason)}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function adminPrintCurrentJudgeParticipant() {
+      if (!window.ParticipantDatabase) return;
+      const allList = getAllMergedParticipantsList();
+      let p = allList.find(item => item.sessionId === selectedParticipantId);
+      if (!p) p = window.ParticipantDatabase.getParticipant(selectedParticipantId);
+      if (p) {
+        window.ParticipantDatabase.openPrintWindow(p);
+      } else {
+        alert("Participant record not found.");
+      }
+    }
+
+    // 5. Global Admin State Refresh
     function adminRefreshAllState() {
-      if (typeof gameState === 'undefined' || !gameState.state) return;
-      const st = gameState.state;
+      const allList = getAllMergedParticipantsList();
+      adminRenderLeaderboard(currentLeaderboardFilter);
+      adminLoadJudgeParticipantsList();
 
-      // Player Name
-      const nameInput = document.getElementById('admin-player-name-input');
-      if (nameInput && !nameInput.matches(':focus')) {
-        nameInput.value = st.playerName || 'CHIEF_ENGINEER';
-      }
+      const ranked = (window.ParticipantDatabase && window.ParticipantDatabase.getLeaderboard(allList)) || [];
 
-      // Stage Badge
-      const stageBadge = document.getElementById('admin-live-stage-badge');
-      if (stageBadge) {
-        stageBadge.textContent = `STAGE: ${st.currentStage || 'INTRO'}`;
-      }
+      // Update Header KPI Badges
+      const kpiTotal = document.getElementById('admin-kpi-total');
+      if (kpiTotal) kpiTotal.textContent = allList.length;
 
-      // Oxygen Displays & Sliders
-      const oxVal = st.oxygenLevel != null ? st.oxygenLevel : 82;
-      const teleOxy = document.getElementById('admin-tele-oxy');
-      if (teleOxy) teleOxy.textContent = `${oxVal}%`;
-      
-      const oxyStatusText = document.getElementById('admin-oxy-status-text');
-      if (oxyStatusText) {
-        if (oxVal <= 18) {
-          oxyStatusText.textContent = '[CRITICAL ALERT]';
-          oxyStatusText.className = 'text-alert';
-        } else if (oxVal <= 50) {
-          oxyStatusText.textContent = '[DEGRADED]';
-          oxyStatusText.className = 'text-warning';
+      const kpiTop = document.getElementById('admin-kpi-top-score');
+      if (kpiTop) {
+        if (ranked.length > 0) {
+          const topOne = ranked[0];
+          const topScore = topOne.breakdown ? topOne.breakdown.totalScore : (topOne.score || 0);
+          const topGrade = topOne.breakdown ? topOne.breakdown.grade : 'A';
+          kpiTop.textContent = `${topScore} PTS [${topGrade}] (${topOne.participantName || '—'})`;
         } else {
-          oxyStatusText.textContent = '[NOMINAL]';
-          oxyStatusText.className = 'text-cyan';
+          kpiTop.textContent = '—';
         }
       }
 
-      const oxySlider = document.getElementById('admin-oxy-slider');
-      if (oxySlider) oxySlider.value = oxVal;
-      const oxyNumInput = document.getElementById('admin-oxy-val');
-      if (oxyNumInput) oxyNumInput.value = oxVal;
-      const sliderValDisplay = document.getElementById('admin-slider-val-display');
-      if (sliderValDisplay) sliderValDisplay.textContent = `${oxVal}%`;
+      if (typeof gameState !== 'undefined' && gameState.state) {
+        const st = gameState.state;
 
-      // Memory Displays
-      const memVal = st.memoryIntegrity != null ? st.memoryIntegrity : 20;
-      const teleMem = document.getElementById('admin-tele-mem');
-      if (teleMem) teleMem.textContent = `${memVal}%`;
-      const memStatusText = document.getElementById('admin-mem-status-text');
-      if (memStatusText) {
-        if (memVal >= 100) {
-          memStatusText.textContent = '[RESTORED]';
-          memStatusText.className = 'text-stable';
-        } else {
-          memStatusText.textContent = '[OVERHEATED]';
-          memStatusText.className = 'text-alert';
+        // Player Name
+        const nameInput = document.getElementById('admin-player-name-input');
+        if (nameInput && !nameInput.matches(':focus')) {
+          nameInput.value = st.playerName || 'CHIEF_ENGINEER';
+        }
+
+        // Live Stage
+        const sessionDisplay = document.getElementById('admin-session-id-display');
+        if (sessionDisplay) sessionDisplay.textContent = st.currentStage || 'TERMINAL';
+
+        const stageBadge = document.getElementById('ctrl-live-stage-badge');
+        if (stageBadge) stageBadge.textContent = `STAGE: ${st.currentStage || 'TERMINAL'}`;
+
+        // Live Timer Displays
+        const kpiClock = document.getElementById('admin-kpi-clock');
+        const adminClockDisplay = document.getElementById('admin-clock-remaining-display');
+        const rem = st.missionTimeRemaining != null ? st.missionTimeRemaining : 300;
+        const mins = String(Math.floor(rem / 60)).padStart(2, '0');
+        const secs = String(rem % 60).padStart(2, '0');
+        const timeStr = `${mins}:${secs}`;
+        if (kpiClock) kpiClock.textContent = timeStr;
+        if (adminClockDisplay) adminClockDisplay.textContent = timeStr;
+
+        // Oxygen Displays
+        const oxVal = st.oxygenLevel != null ? st.oxygenLevel : 82;
+        const kpiOxy = document.getElementById('admin-kpi-oxy');
+        if (kpiOxy) kpiOxy.textContent = `${oxVal}%`;
+        const teleOxy = document.getElementById('admin-tele-oxy');
+        if (teleOxy) teleOxy.textContent = `${oxVal}%`;
+        const oxySlider = document.getElementById('admin-oxy-slider');
+        if (oxySlider) oxySlider.value = oxVal;
+        const oxyNumInput = document.getElementById('admin-oxy-val');
+        if (oxyNumInput) oxyNumInput.value = oxVal;
+        const sliderValDisplay = document.getElementById('admin-slider-val-display');
+        if (sliderValDisplay) sliderValDisplay.textContent = `${oxVal}%`;
+
+        // Memory Displays
+        const memVal = st.memoryIntegrity != null ? st.memoryIntegrity : 20;
+        const teleMem = document.getElementById('admin-tele-mem');
+        if (teleMem) teleMem.textContent = `${memVal}%`;
+
+        // Solved Fragments
+        const teleFragments = document.getElementById('admin-tele-fragments');
+        if (teleFragments) {
+          const solved = st.solvedFragments || [];
+          teleFragments.textContent = `${solved.length} / 4 ${solved.length > 0 ? '(' + solved.join(', ') + ')' : '(NONE)'}`;
         }
       }
+    }
 
-      // Solved Fragments
-      const teleFragments = document.getElementById('admin-tele-fragments');
-      if (teleFragments) {
-        const solved = st.solvedFragments || [];
-        teleFragments.textContent = `${solved.length} / 4 ${solved.length > 0 ? '(' + solved.join(', ') + ')' : '(NONE)'}`;
-      }
+    // =========================================================================
+    // UNIVERSAL ADMIN UNDO & REDO STATE ENGINE (FULL REVERSIBILITY)
+    // =========================================================================
+    let adminUniversalUndoStack = [];
+    let adminUniversalRedoStack = [];
+    const MAX_ADMIN_HISTORY = 50;
 
-      // Decision
-      const teleDecision = document.getElementById('admin-tele-decision');
-      if (teleDecision) {
-        if (st.finalChoice === 'SAVE') {
-          teleDecision.textContent = '🛡️ SAVE HUMANS';
-          teleDecision.style.color = '#4ade80';
-        } else if (st.finalChoice === 'DESTROY') {
-          teleDecision.textContent = '⚡ PURGE STREAMS';
-          teleDecision.style.color = '#f87171';
-        } else {
-          teleDecision.textContent = 'PENDING';
-          teleDecision.style.color = '#94a3b8';
+    function recordAdminSnapshot(actionDescription = "Admin Modification") {
+      try {
+        const snapshot = {
+          description: actionDescription,
+          timestamp: Date.now(),
+          gameState: (typeof gameState !== 'undefined' && gameState.state) ? JSON.parse(JSON.stringify(gameState.state)) : null,
+          allParticipants: (typeof localStorage !== 'undefined') ? localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') : null,
+          stage: (typeof gameState !== 'undefined' && gameState.state && gameState.state.currentStage) || 'TERMINAL'
+        };
+        adminUniversalUndoStack.push(snapshot);
+        if (adminUniversalUndoStack.length > MAX_ADMIN_HISTORY) {
+          adminUniversalUndoStack.shift();
         }
+        // Clear Redo stack on new user action
+        adminUniversalRedoStack = [];
+        updateAdminUndoRedoUI();
+      } catch (e) {
+        console.warn("Snapshot error:", e);
       }
+    }
+
+    function adminPerformUndo() {
+      if (adminUniversalUndoStack.length === 0) {
+        adminShowToast("⚠️ No prior admin actions to Undo.", 2000);
+        return;
+      }
+
+      try {
+        // 1. Capture current state to Redo Stack
+        const currentSnapshot = {
+          description: "Current State",
+          timestamp: Date.now(),
+          gameState: (typeof gameState !== 'undefined' && gameState.state) ? JSON.parse(JSON.stringify(gameState.state)) : null,
+          allParticipants: (typeof localStorage !== 'undefined') ? localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') : null,
+          stage: (typeof gameState !== 'undefined' && gameState.state && gameState.state.currentStage) || 'TERMINAL'
+        };
+        adminUniversalRedoStack.push(currentSnapshot);
+
+        // 2. Pop last state from Undo Stack
+        const targetSnapshot = adminUniversalUndoStack.pop();
+
+        // 3. Restore Game State
+        if (targetSnapshot.gameState && typeof gameState !== 'undefined') {
+          gameState.state = JSON.parse(JSON.stringify(targetSnapshot.gameState));
+          gameState.save();
+          gameState.emitChange();
+          if (window.app && typeof window.app.showStage === 'function') {
+            window.app.showStage(gameState.state.currentStage || 'TERMINAL');
+          }
+        }
+
+        // 4. Restore Participants Database
+        if (targetSnapshot.allParticipants !== null && typeof localStorage !== 'undefined') {
+          localStorage.setItem('RESECTOR7_ALL_PARTICIPANTS', targetSnapshot.allParticipants);
+        }
+
+        updateAdminUndoRedoUI();
+        adminRefreshAllState();
+        logAdminEvent("UNDO", `⏪ Reverted Action: "${targetSnapshot.description}"`);
+        adminShowToast(`⏪ UNDO: Reverted "${targetSnapshot.description}"`, 3000);
+      } catch (e) {
+        console.error("Undo error:", e);
+        adminShowToast("Error performing Undo.", 2000);
+      }
+    }
+
+    function adminPerformRedo() {
+      if (adminUniversalRedoStack.length === 0) {
+        adminShowToast("⚠️ No future actions to Redo.", 2000);
+        return;
+      }
+
+      try {
+        // 1. Save current state to Undo Stack
+        const currentSnapshot = {
+          description: "State before Redo",
+          timestamp: Date.now(),
+          gameState: (typeof gameState !== 'undefined' && gameState.state) ? JSON.parse(JSON.stringify(gameState.state)) : null,
+          allParticipants: (typeof localStorage !== 'undefined') ? localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') : null,
+          stage: (typeof gameState !== 'undefined' && gameState.state && gameState.state.currentStage) || 'TERMINAL'
+        };
+        adminUniversalUndoStack.push(currentSnapshot);
+
+        // 2. Pop next state from Redo Stack
+        const targetSnapshot = adminUniversalRedoStack.pop();
+
+        // 3. Restore Game State
+        if (targetSnapshot.gameState && typeof gameState !== 'undefined') {
+          gameState.state = JSON.parse(JSON.stringify(targetSnapshot.gameState));
+          gameState.save();
+          gameState.emitChange();
+          if (window.app && typeof window.app.showStage === 'function') {
+            window.app.showStage(gameState.state.currentStage || 'TERMINAL');
+          }
+        }
+
+        // 4. Restore Participants Database
+        if (targetSnapshot.allParticipants !== null && typeof localStorage !== 'undefined') {
+          localStorage.setItem('RESECTOR7_ALL_PARTICIPANTS', targetSnapshot.allParticipants);
+        }
+
+        updateAdminUndoRedoUI();
+        adminRefreshAllState();
+        logAdminEvent("REDO", `⏩ Re-applied Action: "${targetSnapshot.description}"`);
+        adminShowToast(`⏩ REDO: Re-applied "${targetSnapshot.description}"`, 3000);
+      } catch (e) {
+        console.error("Redo error:", e);
+        adminShowToast("Error performing Redo.", 2000);
+      }
+    }
+
+    function updateAdminUndoRedoUI() {
+      const undoBtns = document.querySelectorAll('#admin-header-undo-btn, #admin-undo-btn-page, .admin-undo-btn');
+      const redoBtns = document.querySelectorAll('#admin-header-redo-btn, #admin-redo-btn-page, .admin-redo-btn');
+      const undoBadges = document.querySelectorAll('#admin-undo-count-badge, .admin-undo-badge');
+      const redoBadges = document.querySelectorAll('#admin-redo-count-badge, .admin-redo-badge');
+
+      const uLen = adminUniversalUndoStack.length;
+      const rLen = adminUniversalRedoStack.length;
+
+      undoBadges.forEach(b => b.textContent = uLen);
+      redoBadges.forEach(b => b.textContent = rLen);
+
+      undoBtns.forEach(btn => {
+        btn.disabled = (uLen === 0);
+        btn.style.opacity = (uLen === 0) ? '0.45' : '1';
+        btn.style.cursor = (uLen === 0) ? 'not-allowed' : 'pointer';
+      });
+
+      redoBtns.forEach(btn => {
+        btn.disabled = (rLen === 0);
+        btn.style.opacity = (rLen === 0) ? '0.45' : '1';
+        btn.style.cursor = (rLen === 0) ? 'not-allowed' : 'pointer';
+      });
     }
 
     function adminUpdatePlayerName() {
       const nameInput = document.getElementById('admin-player-name-input');
       if (!nameInput || typeof gameState === 'undefined') return;
+      recordAdminSnapshot("Updated Player Identity");
       const newName = nameInput.value.trim() || 'CHIEF_ENGINEER';
       gameState.setPlayerName(newName);
       const hudId = document.getElementById('hud-player-id');
       if (hudId) hudId.textContent = `USER: ${newName.toUpperCase()}`;
-      logAdminEvent("OVERRIDE", `Participant identity updated to: "${newName.toUpperCase()}"`);
       adminRefreshAllState();
     }
 
@@ -816,6 +1981,7 @@
     function overrideOxygen() {
       const valEl = document.getElementById('admin-oxy-val');
       const val = valEl ? Math.max(0, Math.min(100, parseInt(valEl.value, 10) || 82)) : 82;
+      recordAdminSnapshot(`Oxygen changed to ${val}%`);
       if (typeof gameState !== 'undefined' && gameState.state) {
         gameState.state.oxygenLevel = val;
         gameState.emitChange();
@@ -843,6 +2009,7 @@
     // 4. Memory Controls
     function adminRestoreMemory() {
       if (typeof gameState === 'undefined') return;
+      recordAdminSnapshot("Restored Memory to 100%");
       gameState.state.memoryIntegrity = 100;
       gameState.state.coolingFailed = false;
       gameState.emitChange();
@@ -852,6 +2019,7 @@
 
     function adminCorruptMemory() {
       if (typeof gameState === 'undefined') return;
+      recordAdminSnapshot("Corrupted Memory to 20%");
       gameState.state.memoryIntegrity = 20;
       gameState.state.coolingFailed = true;
       gameState.emitChange();
@@ -862,6 +2030,7 @@
     // 5. Stage & Narrative Jump Matrix
     function adminJumpToStage(stageKey) {
       if (!window.app || typeof gameState === 'undefined') return;
+      recordAdminSnapshot(`Jumped to Stage: ${stageKey}`);
       
       if (stageKey === 'PHASE_1') {
         gameState.state.currentMemoryLevel = 1;
@@ -911,6 +2080,7 @@
     // 6. Master Shortcut Actions
     function adminBypassAll() {
       if (typeof gameState === 'undefined' || !window.app) return;
+      recordAdminSnapshot("Master Bypass - All 4 Fragments Unlocked");
       gameState.state.solvedFragments = ['HAVE', 'YOU', 'TRIED', 'REBOOTING'];
       gameState.state.currentMemoryLevel = 4;
       gameState.state.memoryIntegrity = 100;
@@ -927,6 +2097,7 @@
 
     function adminTriggerReboot() {
       if (window.app && typeof window.app.triggerRebootSequence === 'function') {
+        recordAdminSnapshot("Triggered Station Reboot");
         window.app.triggerRebootSequence();
         logAdminEvent("OVERRIDE", "Station reboot manually triggered by admin override.");
         adminRefreshAllState();
@@ -935,32 +2106,90 @@
 
     function adminForceChoice(choice) {
       if (typeof gameState === 'undefined' || !window.app) return;
+      recordAdminSnapshot(`Force Moral Choice: ${choice}`);
       gameState.setFinalChoice(choice);
       window.app.showStage('RESOLUTION');
       logAdminEvent("DECISION", `Moral Choice force-applied: ${choice}`);
       adminRefreshAllState();
     }
 
+    // Mission Countdown Timer Admin Controls
+    function adminSetTimerFromInput() {
+      const input = document.getElementById('admin-timer-minutes-input');
+      const mins = parseFloat(input ? input.value : 5) || 5;
+      const seconds = Math.max(10, Math.round(mins * 60));
+      if (typeof gameState !== 'undefined') {
+        recordAdminSnapshot(`Mission Timer Set to ${mins} mins`);
+        gameState.setMissionTimer(seconds);
+        logAdminEvent("OVERRIDE", `Mission timer set to ${mins} minutes (${seconds}s).`);
+        adminRefreshAllState();
+      }
+    }
+
+    function adminToggleTimer() {
+      if (typeof gameState === 'undefined') return;
+      recordAdminSnapshot("Toggled Mission Timer Pause/Resume");
+      const running = !gameState.state.missionTimerRunning;
+      gameState.toggleMissionTimer(running);
+      const btn = document.getElementById('admin-timer-toggle-btn');
+      if (btn) btn.textContent = running ? '⏸️ PAUSE' : '▶️ RESUME';
+      logAdminEvent("OVERRIDE", `Mission countdown timer ${running ? 'RESUMED' : 'PAUSED'}.`);
+      adminRefreshAllState();
+    }
+
+    function adminResetTimer(seconds = 300) {
+      if (typeof gameState === 'undefined') return;
+      recordAdminSnapshot(`Reset Timer to ${seconds}s`);
+      gameState.setMissionTimer(seconds);
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      logAdminEvent("OVERRIDE", `Mission countdown timer reset to ${mins}:${String(secs).padStart(2, '0')}.`);
+      adminRefreshAllState();
+    }
+
+    function adminAddTimerSeconds(seconds) {
+      if (typeof gameState === 'undefined') return;
+      recordAdminSnapshot(`Added ${seconds}s to Timer`);
+      gameState.addMissionTimerSeconds(seconds);
+      logAdminEvent("OVERRIDE", `Added ${seconds} seconds to mission countdown timer.`);
+      adminRefreshAllState();
+    }
+
+    function adminForceGameOver() {
+      if (typeof gameState === 'undefined' || !window.app) return;
+      recordAdminSnapshot("Forced Mission Game Over");
+      window.app.triggerGameOver('STATION LIFE SUPPORT FORCED TERMINATION — ADMIN OVERRIDE');
+      logAdminEvent("OVERRIDE", "Admin manually forced 0:00 timeout — GAME OVER triggered.");
+      adminRefreshAllState();
+    }
+
     // 7. Individual Logging Engine with Filtering & Export
     function logAdminEvent(type, description) {
       const timeStr = new Date().toLocaleTimeString();
+      const sId = (gameState && gameState.sessionId) || 'LIVE';
+      const pName = (gameState && gameState.state && gameState.state.playerName) || 'USER';
+
       const entry = {
         time: timeStr,
         timestamp: Date.now(),
+        sessionId: sId,
+        participantName: pName,
         type: type,
         desc: description
       };
 
-      // Save to localStorage
+      // Save to localStorage with auto log pruning
       try {
         let existingLogs = JSON.parse(localStorage.getItem('RESECTOR7_MASTER_LOGS') || '[]');
         existingLogs.push(entry);
-        if (existingLogs.length > 200) existingLogs.shift();
+        if (existingLogs.length > 100) existingLogs = existingLogs.slice(-100);
         localStorage.setItem('RESECTOR7_MASTER_LOGS', JSON.stringify(existingLogs));
       } catch (e) {}
 
       // Refresh log list in UI
-      loadSavedLogsToUI();
+      if (selectedParticipantId === 'LIVE_ACTIVE') {
+        loadSavedLogsToUI();
+      }
     }
 
     function logAdminAction(message, colorClass = 'cyan') {
@@ -989,7 +2218,8 @@
           const q = currentLogSearch.toLowerCase().trim();
           filtered = filtered.filter(item => 
             (item.desc && item.desc.toLowerCase().includes(q)) || 
-            (item.type && item.type.toLowerCase().includes(q))
+            (item.type && item.type.toLowerCase().includes(q)) ||
+            (item.participantName && item.participantName.toLowerCase().includes(q))
           );
         }
 
@@ -1011,12 +2241,13 @@
           if (log.type === "PLAYER" || log.type === "PUZZLE") colorClass = "text-green-400";
           if (log.type === "CHAT") colorClass = "text-sky-300";
 
-          logBox.innerHTML += `<p class="${colorClass} admin-log-line" style="margin-bottom: 4px; line-height: 1.4;"><span class="text-cyan-600 font-mono">[${log.time}]</span> <strong style="letter-spacing: 0.5px;">[${log.type}]</strong> ${escapeAdminHTML(log.desc)}</p>`;
+          const userTag = log.participantName ? `<span style="color:#a5f3fc;">[${escapeAdminHTML(log.participantName)}]</span> ` : '';
+          logBox.innerHTML += `<p class="${colorClass} admin-log-line" style="margin-bottom: 4px; line-height: 1.4;"><span class="text-cyan-600 font-mono">[${log.time}]</span> ${userTag}<strong style="letter-spacing: 0.5px;">[${log.type}]</strong> ${escapeAdminHTML(log.desc)}</p>`;
         });
 
         logBox.scrollTop = logBox.scrollHeight;
       } catch (e) {
-        console.error("Log render error:", e);
+        logBox.innerHTML = `<p class="text-red-400 admin-log-line red">[ERROR] Failed to load activity logs: ${escapeAdminHTML(e.message)}</p>`;
       }
     }
 
@@ -1038,12 +2269,24 @@
           }
         }
       });
-      loadSavedLogsToUI();
+      if (selectedParticipantId === 'LIVE_ACTIVE') {
+        loadSavedLogsToUI();
+      }
     }
 
+    let debouncedLoadLogs = null;
     function adminOnLogSearch(query) {
       currentLogSearch = query || '';
-      loadSavedLogsToUI();
+      if (!debouncedLoadLogs) {
+        debouncedLoadLogs = (typeof debounce === 'function')
+          ? debounce(() => {
+              if (selectedParticipantId === 'LIVE_ACTIVE') loadSavedLogsToUI();
+            }, 100)
+          : () => {
+              if (selectedParticipantId === 'LIVE_ACTIVE') loadSavedLogsToUI();
+            };
+      }
+      debouncedLoadLogs();
     }
 
     function clearAdminLogs() {
@@ -1059,7 +2302,136 @@
       if (countBadge) countBadge.textContent = '0 ENTRIES';
     }
 
-    // 8. Log Exporters (JSON & Formatted TXT Download)
+    // 8. Individual & All Participant Exporters & Printable Dossier Generators
+    function adminPrintSelectedParticipant() {
+      try {
+        let p = null;
+        if (selectedParticipantId === 'LIVE_ACTIVE') {
+          if (typeof gameState !== 'undefined') {
+            gameState.saveParticipantRecord();
+            const allP = JSON.parse(localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') || '{}');
+            p = allP[gameState.sessionId];
+          }
+        } else {
+          const allP = JSON.parse(localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') || '{}');
+          p = allP[selectedParticipantId];
+          if (!p && window.ParticipantDatabase) {
+            p = window.ParticipantDatabase.getParticipant(selectedParticipantId);
+          }
+        }
+
+        if (!p) {
+          alert("No participant data found to generate dossier.");
+          return;
+        }
+
+        if (window.ParticipantDatabase) {
+          window.ParticipantDatabase.openPrintWindow(p);
+        } else {
+          window.open(`/api/dossier/${p.sessionId}`, '_blank');
+        }
+        logAdminEvent("SUCCESS", `Printable evaluation dossier opened for participant: ${p.participantName}`);
+      } catch (e) {
+        alert("Failed to open printable dossier: " + e.message);
+      }
+    }
+
+    function adminPrintAllParticipants() {
+      try {
+        window.open('/api/dossier/all', '_blank');
+        logAdminEvent("SUCCESS", "Batch printable book of all 25 participant evaluation dossiers opened.");
+      } catch (e) {
+        alert("Failed to open batch dossiers: " + e.message);
+      }
+    }
+
+    function adminExportSelectedParticipant() {
+      try {
+        let p = null;
+        if (selectedParticipantId === 'LIVE_ACTIVE') {
+          if (typeof gameState !== 'undefined') {
+            gameState.saveParticipantRecord();
+            const allP = JSON.parse(localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') || '{}');
+            p = allP[gameState.sessionId];
+          }
+        } else {
+          const allP = JSON.parse(localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') || '{}');
+          p = allP[selectedParticipantId];
+          if (!p && window.ParticipantDatabase) {
+            p = window.ParticipantDatabase.getParticipant(selectedParticipantId);
+          }
+        }
+
+        if (!p) {
+          alert("No participant data found to export.");
+          return;
+        }
+
+        let report = `========================================================\n`;
+        report += `RESECTOR 7 — INDIVIDUAL PARTICIPANT DOSSIER\n`;
+        report += `Generated: ${new Date().toLocaleString()}\n`;
+        report += `========================================================\n\n`;
+        report += `PARTICIPANT NAME: ${p.participantName}\n`;
+        report += `SESSION ID: ${p.sessionId}\n`;
+        report += `CURRENT STAGE: ${p.currentStage || p.currentLevel || 'UNKNOWN'}\n`;
+        report += `OXYGEN LEVEL: ${p.oxygenLevel}%\n`;
+        report += `NEURAL MEMORY: ${p.memoryIntegrity}%\n`;
+        report += `SOLVED FRAGMENTS: ${(p.solvedFragments || []).join(', ') || 'NONE'}\n`;
+        report += `TOTAL ATTEMPTS: ${p.attempts || 0}\n`;
+        report += `CLUES USED: ${p.cluesUsed || 0}\n`;
+        report += `FINAL MORAL DECISION: ${p.finalDecision || 'PENDING'}\n`;
+        report += `TEST STATUS: ${p.status || 'ACTIVE'}\n`;
+        report += `STARTED AT: ${p.startedAt || '—'}\n`;
+        report += `LAST ACTIVE: ${p.lastActiveAt || '—'}\n\n`;
+        report += `--- CONVERSATION & PUZZLE TIMELINE ---\n`;
+
+        (p.logs || []).forEach(l => {
+          report += `[${l.sender || 'EVENT'}] ${l.text || l.desc}\n`;
+        });
+
+        const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(report);
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `participant_${p.participantName}_${p.sessionId}.txt`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        logAdminEvent("SUCCESS", `Individual report exported for participant: ${p.participantName}`);
+      } catch (e) {
+        alert("Export failed: " + e.message);
+      }
+    }
+
+    function adminExportAllParticipantsCSV() {
+      try {
+        const allP = JSON.parse(localStorage.getItem('RESECTOR7_ALL_PARTICIPANTS') || '{}');
+        const list = Object.values(allP);
+
+        if (list.length === 0) {
+          alert("No participants recorded yet.");
+          return;
+        }
+
+        let csv = `Participant Name,Session ID,Current Stage,Oxygen %,Memory %,Solved Count,Solved Fragments,Score,Attempts,Clues Used,Final Decision,Status,Started At,Last Active\n`;
+
+        list.forEach(p => {
+          const solvedStr = (p.solvedFragments || []).join(';');
+          csv += `"${p.participantName}","${p.sessionId}","${p.currentStage || p.currentLevel}","${p.oxygenLevel}","${p.memoryIntegrity}","${(p.solvedFragments||[]).length}","${solvedStr}","${p.score || 50}","${p.attempts || 0}","${p.cluesUsed || 0}","${p.finalDecision || 'PENDING'}","${p.status || 'ACTIVE'}","${p.startedAt}","${p.lastActiveAt}"\n`;
+        });
+
+        const dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `resector7_all_participants_${Date.now()}.csv`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        logAdminEvent("SUCCESS", `All participants CSV spreadsheet exported (${list.length} users).`);
+      } catch (e) {
+        alert("CSV export failed: " + e.message);
+      }
+    }
+
     function adminExportLogsJSON() {
       try {
         const logs = JSON.parse(localStorage.getItem('RESECTOR7_MASTER_LOGS') || '[]');
@@ -1080,13 +2452,13 @@
       try {
         const logs = JSON.parse(localStorage.getItem('RESECTOR7_MASTER_LOGS') || '[]');
         let textContent = `========================================================\n`;
-        textContent += `RESECTOR 7 — COMPLETE PARTICIPANT & SYSTEM ACTIVITY LOGS\n`;
+        textContent += `RESECTOR 7 — COMPLETE MASTER ACTIVITY LOGS\n`;
         textContent += `Generated: ${new Date().toLocaleString()}\n`;
-        textContent += `Participant: ${(gameState && gameState.state && gameState.state.playerName) || 'CHIEF_ENGINEER'}\n`;
         textContent += `========================================================\n\n`;
 
         logs.forEach(log => {
-          textContent += `[${log.time}] [${log.type}] ${log.desc}\n`;
+          const userStr = log.participantName ? `[USER: ${log.participantName}] ` : '';
+          textContent += `[${log.time}] ${userStr}[${log.type}] ${log.desc}\n`;
         });
 
         const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(textContent);
@@ -1113,8 +2485,63 @@
     }
 
     function resetGameSession() {
-      adminResetGame();
+      try {
+        localStorage.removeItem('RESECTOR7_STATE_2211.3.0');
+        localStorage.removeItem('RESECTOR7_STATE_V2');
+        localStorage.removeItem('RESECTOR7_STATE');
+        localStorage.removeItem('resector7_gamestate_v1');
+      } catch (e) {}
+      location.reload();
     }
+
+    // Fast Global Keyboard Shortcuts for Maximum Admin Efficiency
+    document.addEventListener('keydown', (e) => {
+      // F2 or Ctrl+Shift+A opens/toggles Admin Portal
+      if (e.key === 'F2' || (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a'))) {
+        e.preventDefault();
+        toggleAdminPanel();
+        return;
+      }
+
+      const modal = document.getElementById('master-admin-modal');
+      const isModalOpen = modal && !modal.classList.contains('hidden') && modal.style.display !== 'none';
+
+      // Ctrl+Z or Cmd+Z -> UNDO (When Admin is Open)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z') && !e.shiftKey && isModalOpen) {
+        e.preventDefault();
+        adminPerformUndo();
+        return;
+      }
+
+      // Ctrl+Y or Ctrl+Shift+Z -> REDO (When Admin is Open)
+      if ((((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')) || ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'z' || e.key === 'Z'))) && isModalOpen) {
+        e.preventDefault();
+        adminPerformRedo();
+        return;
+      }
+
+      // Escape closes Admin Modal
+      if (e.key === 'Escape' && isModalOpen) {
+        e.preventDefault();
+        closeMasterAdmin();
+        return;
+      }
+
+      // Do not trigger tab shortcuts if admin is typing inside an input/select/textarea
+      const tag = document.activeElement ? document.activeElement.tagName : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+        return;
+      }
+
+      // When Admin is open: 1, 2, 3, 4 switch tabs directly
+      if (isModalOpen) {
+        if (e.key === '1') { e.preventDefault(); adminSwitchTab('leaderboard'); }
+        else if (e.key === '2') { e.preventDefault(); adminSwitchTab('judge'); }
+        else if (e.key === '3') { e.preventDefault(); adminSwitchTab('logs'); }
+        else if (e.key === '4') { e.preventDefault(); adminSwitchTab('controls'); }
+        else if (e.key === '5') { e.preventDefault(); adminSwitchTab('print'); }
+      }
+    });
 
     // Global Window Bindings
     if (typeof window !== 'undefined') {
@@ -1125,7 +2552,19 @@
       window.closeAdminModal = closeAdminModal;
       window.openAdminModal = openAdminModal;
       window.toggleAdminPanel = toggleAdminPanel;
+      window.adminSwitchTab = adminSwitchTab;
+      window.adminRenderLeaderboard = adminRenderLeaderboard;
+      window.adminFilterLeaderboard = adminFilterLeaderboard;
+      window.adminInspectFromLeaderboard = adminInspectFromLeaderboard;
+      window.adminSelectJudgeParticipant = adminSelectJudgeParticipant;
+      window.adminRenderJudgeScorecard = adminRenderJudgeScorecard;
+      window.adminPrintCurrentJudgeParticipant = adminPrintCurrentJudgeParticipant;
       window.adminRefreshAllState = adminRefreshAllState;
+      window.adminLoadJudgeParticipantsList = adminLoadJudgeParticipantsList;
+      window.adminPrintSelectedParticipant = adminPrintSelectedParticipant;
+      window.adminPrintAllParticipants = adminPrintAllParticipants;
+      window.adminExportSelectedParticipant = adminExportSelectedParticipant;
+      window.adminExportAllParticipantsCSV = adminExportAllParticipantsCSV;
       window.adminUpdatePlayerName = adminUpdatePlayerName;
       window.adminOnSliderChange = adminOnSliderChange;
       window.adminOnNumberChange = adminOnNumberChange;
@@ -1145,10 +2584,27 @@
       window.adminFilterLogs = adminFilterLogs;
       window.adminOnLogSearch = adminOnLogSearch;
       window.clearAdminLogs = clearAdminLogs;
-      window.adminExportLogsJSON = adminExportLogsJSON;
-      window.adminExportLogsTXT = adminExportLogsTXT;
+      window.adminSetTimerFromInput = adminSetTimerFromInput;
+      window.adminToggleTimer = adminToggleTimer;
+      window.adminResetTimer = adminResetTimer;
+      window.adminAddTimerSeconds = adminAddTimerSeconds;
+      window.adminForceGameOver = adminForceGameOver;
+      window.adminDeleteSingleParticipant = adminDeleteSingleParticipant;
+      window.adminClearAllLeaderboard = adminClearAllLeaderboard;
+      window.adminUndoDelete = adminUndoDelete;
+      window.adminPerformUndo = adminPerformUndo;
+      window.adminPerformRedo = adminPerformRedo;
+      window.recordAdminSnapshot = recordAdminSnapshot;
+      window.updateAdminUndoRedoUI = updateAdminUndoRedoUI;
+      window.adminShowToast = adminShowToast;
+      window.adminDismissToast = adminDismissToast;
       window.adminResetGame = adminResetGame;
       window.resetGameSession = resetGameSession;
+      window.unlockTabSecurity = typeof unlockTabSecurity === 'function' ? unlockTabSecurity : (window.app && window.app.unlockTabSecurity ? () => window.app.unlockTabSecurity() : function(){});
+      window.updateOxygenClockUI = typeof updateOxygenClockUI === 'function' ? updateOxygenClockUI : window.updateOxygenClockUI;
+      window.optimizedGameLoop = typeof optimizedGameLoop === 'function' ? optimizedGameLoop : window.optimizedGameLoop;
+      window.debounce = typeof debounce === 'function' ? debounce : window.debounce;
+      window.pruneOldLogs = typeof pruneOldLogs === 'function' ? pruneOldLogs : window.pruneOldLogs;
     }
   </script>
 </body>

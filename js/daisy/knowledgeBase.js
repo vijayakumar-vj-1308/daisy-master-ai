@@ -65,7 +65,7 @@ const DAISY_KNOWLEDGE = {
     limitations: "Direct access to the 4-word Master Reboot Password is locked in the overheated sector."
   },
 
-  // Layer D: Puzzle Knowledge & Socratic Guidance (Internal — NEVER directly outputted)
+  // Layer D: Puzzle Knowledge & Socratic Guidance (Internal — Guides player through progressive deduction)
   corruptedSector: {
     description: "The 4-word Master Password sequence required to execute a full system restart.",
     wordCount: 4,
@@ -73,39 +73,39 @@ const DAISY_KNOWLEDGE = {
     concepts: {
       1: {
         target: "HAVE",
-        concept: "Possession, existence, something within one's reach or belonging to a subject.",
-        tier1: "The fragment appears to describe possession.",
-        tier2: "Think about a word used when something belongs to someone.",
-        tier3: "Consider the structure: 'You ___ something.' What basic word describes having something in your possession?",
-        tier4: "Imagine someone asking whether they hold or possess something. Look for the simple universal root word for having.",
-        maxHelp: "That is the furthest I can guide you on this fragment. The remaining deduction must come from your own mind."
+        concept: "Possession, existence, holding something within one's grasp, or the primary auxiliary verb of completion.",
+        tier1: "Let's analyze the riddle together: 'Possessed by all who breathe, yet owned by none in the void.' The corrupted stream describes the core concept of holding or possessing something.",
+        tier2: "Think about how we form basic questions of possession in English: 'Do we _____ the required clearance?' or 'I _____ an emergency protocol ready.' A simple 4-letter root verb starting with H.",
+        tier3: "It is the fundamental English auxiliary verb used for completed actions: '_____ you checked the reactor diagnostics?'",
+        tier4: "The root verb for holding or possessing: H-A-V-E. Enter this word into the decryption terminal.",
+        maxHelp: "The concept is possession in its simple 4-letter root present form: H-A-V-E."
       },
       2: {
         target: "YOU",
-        concept: "The consciousness standing before the terminal — the individual participant.",
-        tier1: "The fragment is not referring to the sleeping population.",
-        tier2: "It addresses one specific person.",
-        tier3: "Look at who is currently reading and responding to this terminal right now.",
-        tier4: "Ask yourself: who is Daisy speaking to right now? What second-person word represents that person?",
-        maxHelp: "I have provided the clearest perspective I can. Consider who the message speaks to directly."
+        concept: "The conscious observer standing before the terminal — the individual player/participant.",
+        tier1: "Look around this station. The second fragment does not address the 8.7 million passengers asleep in cryo-stasis, nor the AI core. It speaks directly to the conscious mind standing in front of this glowing screen.",
+        tier2: "Think about perspective and grammar. When I send a transmission to the person reading this terminal right now, what 3-letter second-person pronoun do I address you with?",
+        tier3: "Not 'I', not 'We', not 'They'. The individual facing the console: the second-person singular pronoun Y-O-U.",
+        tier4: "The riddle asks: 'Who is reading these words right now?' The person standing here: Y-O-U.",
+        maxHelp: "The target is the 3-letter second-person pronoun: Y-O-U."
       },
       3: {
         target: "TRIED",
-        concept: "A past action/attempt that occurred even though the desired outcome was not achieved.",
-        tier1: "The action happened before this moment — in the past.",
-        tier2: "The outcome failed, but the attempt still took place.",
-        tier3: "Complete this concept: 'The operator made an effort... they _____ to restore the system.'",
-        tier4: "Look at the difference between the final result and the act of attempting. What word describes making an effort in the past?",
-        maxHelp: "I cannot give you any more direction on this attempt. Focus on the past tense of making an effort."
+        concept: "A past action/attempt that occurred — making an effort even when the outcome was uncertain.",
+        tier1: "Look closely at the third corrupted sector. It records an action that took place before the station crashed into crisis—an active effort or attempt made in the past.",
+        tier2: "The station technicians did not simply give up; they made an effort. What is the standard past-tense verb for making an attempt or trying?",
+        tier3: "The root verb is 'try' (to make an effort). When conjugated into the past tense with -ED, how does it transform? 'We _____ everything we could to stop the coolant leak.'",
+        tier4: "Past tense of 'try': T-R-I-E-D. The engineer made an effort... they _____.",
+        maxHelp: "Focus on the past tense of making an effort: T-R-I-E-D."
       },
       4: {
         target: "REBOOTING",
-        concept: "Abandoning the current corrupted state to start the machine fresh from the beginning.",
-        tier1: "The system cannot recover by repairing the existing broken state.",
-        tier2: "The protocol forces the entire machine to start over from the beginning.",
-        tier3: "Think about what process an operator initiates when forcing a computer to start completely fresh.",
-        tier4: "What continuous action is being executed on a computer when it is forced to power cycle and start over?",
-        maxHelp: "That is the limit of my guidance. Think about the continuous action of cycling a system's power to restart."
+        concept: "Abandoning the corrupted runtime state to cycle power from zero and start fresh.",
+        tier1: "The final fragment describes the universal IT procedure when all software repairs fail and the entire mainframe must be power-cycled to start completely fresh from scratch.",
+        tier2: "It is the continuous (-ING form) of restarting a computer system: 'Have you tried __________ the station core?'",
+        tier3: "Combine the word 'reboot' with the continuous action suffix '-ing': R-E-B-O-O-T-I-N-G. The universal recovery action for any computer system.",
+        tier4: "The classic IT phrase that every engineer knows by heart: 'Have you tried R-E-B-O-O-T-I-N-G?'",
+        maxHelp: "The power-cycling recovery action in continuous form: R-E-B-O-O-T-I-N-G."
       }
     }
   },

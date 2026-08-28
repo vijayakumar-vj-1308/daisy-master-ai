@@ -7,6 +7,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const server = require('./server.js');
 
 const BASE_URL = 'http://127.0.0.1:3000';
 

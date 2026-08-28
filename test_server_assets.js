@@ -1,4 +1,5 @@
 const http = require('http');
+const server = require('./server.js');
 
 const urls = [
   'http://localhost:3000/',

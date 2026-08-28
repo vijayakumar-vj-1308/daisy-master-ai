@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <!-- Sci-Fi Glow Filters -->
+    <filter id="daisy-core-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="petal-ambient-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Gradients -->
+    <radialGradient id="grad-core" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="35%" stop-color="#38bdf8" stop-opacity="0.9" />
+      <stop offset="75%" stop-color="#00f0ff" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.95" />
+    </radialGradient>
+
+    <linearGradient id="grad-petal-1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#bae6fd" stop-opacity="0.95" />
+      <stop offset="40%" stop-color="#38bdf8" stop-opacity="0.9" />
+      <stop offset="85%" stop-color="#00e5ff" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#0369a1" stop-opacity="0.6" />
+    </linearGradient>
+
+    <linearGradient id="grad-petal-2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.95" />
+      <stop offset="50%" stop-color="#00f0ff" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.65" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Ambient Aura -->
+  <circle cx="100" cy="100" r="88" fill="rgba(0, 240, 255, 0.08)" filter="url(#daisy-core-glow)" />
+
+  <!-- 16 Radiating Daisy Petals -->
+  <g id="daisy-petals" filter="url(#petal-ambient-glow)">
+    <!-- Petal 1 (0 deg) -->
+    <g transform="rotate(0 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-1)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 2 (22.5 deg) -->
+    <g transform="rotate(22.5 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-2)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 3 (45 deg) -->
+    <g transform="rotate(45 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-1)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 4 (67.5 deg) -->
+    <g transform="rotate(67.5 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-2)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 5 (90 deg) -->
+    <g transform="rotate(90 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-1)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 6 (112.5 deg) -->
+    <g transform="rotate(112.5 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-2)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 7 (135 deg) -->
+    <g transform="rotate(135 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-1)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 8 (157.5 deg) -->
+    <g transform="rotate(157.5 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-2)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 9 (180 deg) -->
+    <g transform="rotate(180 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-1)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 10 (202.5 deg) -->
+    <g transform="rotate(202.5 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-2)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 11 (225 deg) -->
+    <g transform="rotate(225 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-1)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 12 (247.5 deg) -->
+    <g transform="rotate(247.5 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-2)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 13 (270 deg) -->
+    <g transform="rotate(270 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-1)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 14 (292.5 deg) -->
+    <g transform="rotate(292.5 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-2)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 15 (315 deg) -->
+    <g transform="rotate(315 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-1)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+    <!-- Petal 16 (337.5 deg) -->
+    <g transform="rotate(337.5 100 100)">
+      <path d="M 92 32 C 92 18, 108 18, 108 32 C 108 55, 105 78, 100 78 C 95 78, 92 55, 92 32 Z" fill="url(#grad-petal-2)" stroke="#e0f2fe" stroke-width="1.2" stroke-opacity="0.8" />
+      <path d="M 100 24 L 100 68" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- Central Core Center Ring -->
+  <circle cx="100" cy="100" r="32" fill="url(#grad-core)" stroke="#ffffff" stroke-width="2.5" filter="url(#daisy-core-glow)" />
+  <circle cx="100" cy="100" r="29" fill="none" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="4, 3" />
+
+  <!-- Daisy Smile / Cyber Core Sensor Face -->
+  <!-- Left Eye -->
+  <ellipse cx="88" cy="94" rx="3.5" ry="4.5" fill="#082f49" />
+  <circle cx="87" cy="92.5" r="1.5" fill="#ffffff" />
+
+  <!-- Right Eye -->
+  <ellipse cx="112" cy="94" rx="3.5" ry="4.5" fill="#082f49" />
+  <circle cx="111" cy="92.5" r="1.5" fill="#ffffff" />
+
+  <!-- Cheerful Cyber Smile -->
+  <path d="M 88 105 C 88 117, 112 117, 112 105" fill="none" stroke="#082f49" stroke-width="3" stroke-linecap="round" />
+  <path d="M 92 108 C 96 113, 104 113, 108 108" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity="0.8" />
+</svg>

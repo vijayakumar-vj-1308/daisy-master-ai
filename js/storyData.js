@@ -34,13 +34,12 @@ const STORY_DATA = {
 
   // Preset Inquiries Available to the Player in Chat
   QUICK_INQUIRIES: [
-    { label: "What happened?", query: "What happened?" },
-    { label: "How many people are here?", query: "How many people are here?" },
-    { label: "Can they be saved?", query: "Can they be saved?" },
-    { label: "Can you remember the password?", query: "Can you remember the password?" },
-    { label: "Tell me the password", query: "Tell me the password." },
-    { label: "Give me a clue", query: "Give me a clue." },
-    { label: "Can I fix you?", query: "Can I fix you?" }
+    { label: "💡 Give Me a Clue", query: "Give me a clue to identify this fragment." },
+    { label: "🔍 How to solve riddle?", query: "How should I analyze this memory riddle?" },
+    { label: "🫁 Station & Oxygen", query: "What happened to the cooling and oxygen systems?" },
+    { label: "👥 Who is in the pods?", query: "How many people are sleeping in the stasis pods?" },
+    { label: "🧠 Password Recovery", query: "Can you remember the master reboot password?" },
+    { label: "🛡️ Can we save them?", query: "Can the 8.7 million humans still be saved?" }
   ],
 
   // Dynamic Rule-Based Responses for Daisy AI
@@ -186,51 +185,46 @@ const STORY_DATA = {
   ]
 };
 
-// Progressive Clue Management based on Help count or Level
+// Progressive Clue Management based on Help count, Round timing & Level
 function getProgressiveClue(level, helpCount) {
-  // --- LEVEL 1: 'HAVE' ---
+  const timeLimits = {
+    1: { mins: 5, secs: 300, easyClue: "A word meaning possession." },
+    2: { mins: 7, secs: 420, easyClue: "The word refers to the person reading this." },
+    3: { mins: 7, secs: 420, easyClue: "It means attempted." },
+    4: { mins: 4, secs: 240, easyClue: "It means attempted." }
+  };
+
+  const cfg = timeLimits[level] || { mins: 5, secs: 300, easyClue: "Examine the fragment closely." };
+
+  let timeInRound = 0;
+  if (typeof gameState !== 'undefined' && typeof gameState.getTimeSpentInLevel === 'function') {
+    timeInRound = gameState.getTimeSpentInLevel(level);
+  } else if (typeof gameState !== 'undefined' && gameState.state && gameState.state.levelStartTimes && gameState.state.levelStartTimes[level - 1]) {
+    timeInRound = Math.floor((Date.now() - gameState.state.levelStartTimes[level - 1]) / 1000);
+  }
+
+  const isTimeUnlocked = timeInRound >= cfg.secs;
+
+  if (isTimeUnlocked) {
+    return `DAISY: "[DIRECT DECRYPTION UNLOCKED // ROUND ${level} DURATION > ${cfg.mins} MINS] ${cfg.easyClue}"`;
+  }
+
+  // Time locked
+  const elapsedMins = Math.floor(timeInRound / 60);
+  const elapsedSecs = timeInRound % 60;
+  const remMins = Math.ceil((cfg.secs - timeInRound) / 60);
+
   if (level === 1) {
-    if (helpCount === 1) {
-      return `DAISY: "[CLUE 01] Partner, look at the first line of the fragment: 'A possession can be physical.' What word do we use when someone owns or holds something?"`;
-    } else if (helpCount === 2) {
-      return `DAISY: "[CLUE 02] Think about the sentence structure: 'You ___ a pen.' What is that missing action/verb?"`;
-    } else {
-      return `DAISY: "[CLUE 03] It's a 4-letter basic English word starting with 'H'. You use it to show possession!"`;
-    }
+    return `DAISY: "[CLUE TIME-LOCKED (Requires > 5 mins in Round 1 | Elapsed: ${elapsedMins}m ${elapsedSecs}s)] Partner, look at the first line of the fragment: 'A possession can be physical.' What word do we use when someone owns or holds something?"`;
+  } else if (level === 2) {
+    return `DAISY: "[CLUE TIME-LOCKED (Requires > 7 mins in Round 2 | Elapsed: ${elapsedMins}m ${elapsedSecs}s)] Read the fragment carefully: 'It is meant for the consciousness standing before this terminal.' Who is reading this right now?"`;
+  } else if (level === 3) {
+    return `DAISY: "[CLUE TIME-LOCKED (Requires > 7 mins in Round 3 | Elapsed: ${elapsedMins}m ${elapsedSecs}s)] The archives mention an effort made in the past, but it didn't reach success. What past-tense word describes an attempt?"`;
+  } else if (level === 4) {
+    return `DAISY: "[CLUE TIME-LOCKED (Requires > 4 mins in Round 4 | Elapsed: ${elapsedMins}m ${elapsedSecs}s)] When a system completely freezes, what is the emergency action to clear memory and start fresh ending in 'ING'?"`;
   }
 
-  // --- LEVEL 2: 'YOU' ---
-  if (level === 2) {
-    if (helpCount === 1) {
-      return `DAISY: "[CLUE 01] Read the fragment carefully: 'It is meant for the consciousness standing before this terminal.' Who is reading this right now?"`;
-    } else if (helpCount === 2) {
-      return `DAISY: "[CLUE 02] It's a second-person pronoun pointing directly at the person operating the keyboard."`;
-    } else {
-      return `DAISY: "[CLUE 03] It's a 3-letter word: Y _ _."`;
-    }
-  }
-
-  // --- LEVEL 3: 'TRIED' ---
-  if (level === 3) {
-    if (helpCount === 1) {
-      return `DAISY: "[CLUE 01] The archives mention an effort made in the past, but it didn't reach success. What past-tense word describes an attempt?"`;
-    } else if (helpCount === 2) {
-      return `DAISY: "[CLUE 02] It starts with 'T' and ends with 'D'. Like 'attempted' or 'tested'."`;
-    } else {
-      return `DAISY: "[CLUE 03] The 5-letter word is: T R _ _ D."`;
-    }
-  }
-
-  // --- LEVEL 4: 'REBOOTING' ---
-  if (level === 4) {
-    if (helpCount === 1) {
-      return `DAISY: "[CLUE 01] When a system completely freezes, what is the ultimate emergency action to clear the memory and start fresh?"`;
-    } else {
-      return `DAISY: "[CLUE 02] Combine all the words you found so far: [HAVE] [YOU] [TRIED] + the action of restarting the machine ending in 'ING'."`;
-    }
-  }
-
-  return `DAISY: "Analyze the active fragment text carefully, Partner. The answer is hidden within the phrasing."`;
+  return `DAISY: "Analyze the active fragment text carefully, Partner. Direct semantic clue unlocks after ${cfg.mins} minutes."`;
 }
 
 STORY_DATA.getProgressiveClue = getProgressiveClue;

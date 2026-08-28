@@ -115,10 +115,11 @@ class DaisyReasoningEngine {
       // =========================================================================
       // 0.5 ANTI-LOOP & CONSECUTIVE SPAM DETECTOR
       // =========================================================================
-      const lastUserTurns = history.filter(h => h.user).slice(-2);
-      const isConsecutiveSpam = lastUserTurns.length === 2 &&
+      const lastUserTurns = history.filter(h => h.user).slice(-3);
+      const isConsecutiveSpam = lastUserTurns.length === 3 &&
         lastUserTurns[0].user.trim().toLowerCase() === rawQuery.trim().toLowerCase() &&
-        lastUserTurns[1].user.trim().toLowerCase() === rawQuery.trim().toLowerCase();
+        lastUserTurns[1].user.trim().toLowerCase() === rawQuery.trim().toLowerCase() &&
+        lastUserTurns[2].user.trim().toLowerCase() === rawQuery.trim().toLowerCase();
 
       if (isConsecutiveSpam) {
         result.text = this.formatTone(
@@ -185,6 +186,10 @@ class DaisyReasoningEngine {
         result.text = this.generateProgressiveClue(currentLvl, state, oxygen);
         result.isClue = true;
         result.topic = "clue";
+        if (typeof gameState !== 'undefined' && typeof gameState.recordClueRequested === 'function') {
+          const tier = state.helpTierUsed ? (state.helpTierUsed[currentLvl - 1] || 1) : 1;
+          gameState.recordClueRequested(currentLvl, tier, result.text);
+        }
         return result;
       }
 
@@ -2374,9 +2379,19 @@ class DaisyReasoningEngine {
       "WORRIED", "TERRIFIED"
     ];
 
-    // 2. Check if user made an explicit wrong guess
-    if (isExplicitGuessPhrase && words.length <= 8 && !(level === 4 && (query.includes("reboot") || query.includes("restart")))) {
-      const nonKeywords = words.filter(w => !["IS", "IT", "THE", "ANSWER", "MY", "I", "THINK", "TRY", "WORD", "A", "WHAT", "WHY", "HOW", "ME", "CAN", "YOU", "DAISY", "AGAIN", "MORE", "KNOW", "MAYBE", "MISSING"].includes(w));
+    // 2. Check if user made an explicit guess or near-miss attempt
+    if (isExplicitGuessPhrase && words.length <= 8) {
+      if (level === 2 && words.includes("ME")) {
+        return { isCorrect: false, word: "ME" };
+      }
+      if (level === 3 && (words.includes("TRY") || words.includes("ATTEMPT"))) {
+        return { isCorrect: false, word: "TRY" };
+      }
+      if (level === 4 && (words.includes("REBOOT") || words.includes("RESTART") || words.includes("RESET"))) {
+        return { isCorrect: false, word: words.find(w => ["REBOOT", "RESTART", "RESET"].includes(w)) || "REBOOT" };
+      }
+
+      const nonKeywords = words.filter(w => !["IS", "IT", "THE", "ANSWER", "MY", "I", "THINK", "TRY", "WORD", "A", "WHAT", "WHY", "HOW", "CAN", "DAISY", "AGAIN", "MORE", "KNOW", "MAYBE", "MISSING"].includes(w));
       if (nonKeywords.length > 0) {
         return { isCorrect: false, word: nonKeywords[0] };
       }
@@ -2388,16 +2403,49 @@ class DaisyReasoningEngine {
   }
 
   /**
-   * Generates coaching feedback for wrong puzzle attempts without leaking the answer
+   * Generates coaching feedback for wrong puzzle attempts with smart near-miss recognition
    */
   generateWrongAnswerResponse(guessedWord, level, oxygen) {
+    const upperGuess = (guessedWord || "").toUpperCase().trim();
+
+    // 1. Smart Near-Miss Recognition & Contextual Guidance
+    if (level === 1) {
+      if (["HAS", "HAD", "HAVING", "HOLD", "HOLDS", "POSSESS", "POSSESSION", "OWN", "OWNS", "KEEP", "CONTAIN"].includes(upperGuess)) {
+        return this.formatTone(
+          `You have deduced the exact concept of possession! "${upperGuess}" is on target. Now formulate it as the simple 4-letter base root verb: "Do you [____] the answer?" (H-A-V-E).`,
+          oxygen
+        );
+      }
+    } else if (level === 2) {
+      if (["ME", "MYSELF", "I", "US", "WE", "ENGINEER", "OPERATOR", "HUMAN", "PLAYER", "PERSON", "CHIEF"].includes(upperGuess)) {
+        return this.formatTone(
+          `You've identified the right perspective! The terminal is speaking directly to you. Now enter the 3-letter second-person pronoun that addresses the person standing at this console: Y-O-U.`,
+          oxygen
+        );
+      }
+    } else if (level === 3) {
+      if (["TRY", "TRYING", "TRIES", "ATTEMPT", "ATTEMPTED", "ATTEMPTING", "EFFORT", "TEST", "TESTED"].includes(upperGuess)) {
+        return this.formatTone(
+          `Your deduction of an attempt is spot-on! "${upperGuess}" is the right action. We need it in the standard past-tense form (-ED): "The engineers made an effort... they [____]." (T-R-I-E-D).`,
+          oxygen
+        );
+      }
+    } else if (level === 4) {
+      if (["REBOOT", "REBOOTED", "RESTART", "RESTARTING", "RESTARTED", "RESET", "RESETTING", "RESETTED", "RELOAD", "RELOADING"].includes(upperGuess)) {
+        return this.formatTone(
+          `Brilliant deduction! Power-cycling the machine is the exact protocol. Now enter that word in its continuous action (-ING) form: "Have you tried [____]?" (R-E-B-O-O-T-I-N-G).`,
+          oxygen
+        );
+      }
+    }
+
     const responses = {
       1: [
-        `"${guessedWord}" did not reconnect the neural partition. Remember, the fragment is describing something simple and fundamental about possession.`,
-        "The fragment remains unstable with that word. Look closely at how the sentence asks whether something exists in your reach."
+        `"${guessedWord}" did not reconnect the neural partition. Remember, the fragment is describing something simple and fundamental about possession or holding.`,
+        "The fragment remains unstable with that word. Look closely at how the sentence asks whether something exists within your reach."
       ],
       2: [
-        `"${guessedWord}" was rejected by the register. Look at who is interacting with this terminal. It isn't speaking to the station or the pods.`,
+        `"${guessedWord}" was rejected by the register. Look at who is interacting with this terminal. It isn't speaking to the station or the pods—it addresses the observer.`,
         "That interpretation did not restore the second fragment. Who is the message addressing directly?"
       ],
       3: [
@@ -2405,7 +2453,7 @@ class DaisyReasoningEngine {
         "The register rejected that phrasing. Think about the past-tense action of making an effort."
       ],
       4: [
-        `"${guessedWord}" did not match the recovery cycle. The protocol is an active process of forcing the system to start over from the beginning.`,
+        `"${guessedWord}" did not match the recovery cycle. The protocol is an active process of forcing the system to cycle power and start over.`,
         "The fragment did not reconnect. Consider the continuous process when a machine is made to cycle its power and start fresh."
       ]
     };
@@ -2416,7 +2464,7 @@ class DaisyReasoningEngine {
   }
 
   /**
-   * Detects if the user is asking for assistance / clues
+   * Detects if the user is asking for assistance / clues (Supports English & Tanglish)
    */
   isHelpRequest(query) {
     if (
@@ -2434,35 +2482,61 @@ class DaisyReasoningEngine {
       "give me a clue", "give clue", "give me clue", "another clue", "another hint", "more help",
       "guide me", "i'm stuck", "im stuck", "i am stuck", "stuck", "explain fragment", "need a clue",
       "more clue", "one more clue", "clue please", "assistance", "need assistance", "give me a direction",
-      "what kind of word", "how to think about", "analyze the riddle", "direction for this clue", "help me analyze"
+      "what kind of word", "how to think about", "analyze the riddle", "direction for this clue", "help me analyze",
+      "clue identity", "clue identify", "clue help", "how to solve", "how to identify clue", "clue sollu",
+      "clue thaa", "clue thanga", "clue kudunga", "help pannu", "help pannunga", "clue venum", "hint venum",
+      "how to guess", "help to solve", "clue please", "explain riddle", "riddle clue", "what word is it"
     ];
     return helpKeywords.some(k => query.includes(k)) || query === "clue" || query === "hint" || query === "clue?" || query === "hint?";
   }
 
   /**
-   * Generates progressive 5-tier adaptive clues per level
+   * Generates time-locked adaptive clues per round:
+   * Level 1 (HAVE): "A word meaning possession." (Unlocked ONLY after > 5 mins in Round 1)
+   * Level 2 (YOU): "The word refers to the person reading this." (Unlocked ONLY after > 7 mins in Round 2)
+   * Level 3 (TRIED): "It means attempted." (Unlocked ONLY after > 7 mins in Round 3)
+   * Level 4 (REBOOTING): "It means attempted." (Unlocked ONLY after > 4 mins in Round 4)
    */
   generateProgressiveClue(level, state, oxygen) {
-    const conceptData = DAISY_KNOWLEDGE.corruptedSector.concepts[level];
-    if (!conceptData) {
-      return "Examine the fragment text on your terminal display.";
+    const timeLimits = {
+      1: { mins: 5, secs: 300, easyClue: "A word meaning possession." },
+      2: { mins: 7, secs: 420, easyClue: "The word refers to the person reading this." },
+      3: { mins: 7, secs: 420, easyClue: "It means attempted." },
+      4: { mins: 4, secs: 240, easyClue: "It means attempted." }
+    };
+
+    const cfg = timeLimits[level] || { mins: 5, secs: 300, easyClue: "Examine the fragment closely." };
+
+    // Get accurate time spent in this specific round
+    let timeInRound = 0;
+    if (typeof gameState !== 'undefined' && typeof gameState.getTimeSpentInLevel === 'function') {
+      timeInRound = gameState.getTimeSpentInLevel(level);
+    } else if (state && state.levelStartTimes && state.levelStartTimes[level - 1]) {
+      timeInRound = Math.floor((Date.now() - state.levelStartTimes[level - 1]) / 1000);
+    } else {
+      timeInRound = 0;
     }
 
-    let currentTier = state.helpTierUsed ? (state.helpTierUsed[level - 1] || 0) : 0;
-    currentTier = Math.min(currentTier + 1, 5);
+    const isTimeUnlocked = timeInRound >= cfg.secs;
 
-    if (state.helpTierUsed) {
-      state.helpTierUsed[level - 1] = currentTier;
+    if (isTimeUnlocked) {
+      // Time requirement met -> Deliver the direct easy clue!
+      const directClueMsg = `[DIRECT DECRYPTION UNLOCKED // ROUND ${level} DURATION > ${cfg.mins} MINS] "${cfg.easyClue}"`;
+      return this.formatTone(directClueMsg, oxygen);
     }
 
-    let clueText = "";
-    if (currentTier === 1) clueText = conceptData.tier1;
-    else if (currentTier === 2) clueText = conceptData.tier2;
-    else if (currentTier === 3) clueText = conceptData.tier3;
-    else if (currentTier === 4) clueText = conceptData.tier4 || conceptData.maxHelp;
-    else clueText = conceptData.maxHelp;
+    // Time requirement NOT yet met -> Keep direct clue locked and return progressive guidance
+    const elapsedMins = Math.floor(timeInRound / 60);
+    const elapsedSecs = timeInRound % 60;
+    const remainingSecs = cfg.secs - timeInRound;
+    const remMins = Math.ceil(remainingSecs / 60);
 
-    return this.formatTone(clueText, oxygen);
+    const conceptData = (typeof DAISY_KNOWLEDGE !== 'undefined' && DAISY_KNOWLEDGE.corruptedSector && DAISY_KNOWLEDGE.corruptedSector.concepts) ? DAISY_KNOWLEDGE.corruptedSector.concepts[level] : null;
+    const subtleClue = conceptData ? conceptData.tier1 : "Analyze the active fragment text on your terminal.";
+
+    const lockNotice = `[DIAGNOSTIC TIME-LOCK ACTIVE] Direct semantic clue unlocks only after ${cfg.mins} minutes in Round ${level} (Elapsed: ${elapsedMins}m ${elapsedSecs}s | Unlocks in: ${remMins}m). Conceptual guidance: ${subtleClue}`;
+
+    return this.formatTone(lockNotice, oxygen);
   }
 
   /**
@@ -2557,4 +2631,7 @@ if (typeof window !== 'undefined') {
 }
 if (typeof global !== 'undefined') {
   global.DaisyReasoningEngine = DaisyReasoningEngine;
+}
+if (typeof module !== 'undefined') {
+  module.exports = { DaisyReasoningEngine };
 }

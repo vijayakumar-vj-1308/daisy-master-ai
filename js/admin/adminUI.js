@@ -244,10 +244,13 @@ class AdminUIManager {
       if (session.finalDecision === 'SAVE') decisionClass = 'decision-save';
       if (session.finalDecision === 'DO NOT SAVE') decisionClass = 'decision-destroy';
 
+      const wordsCount = session.userWordCount || (session.logs || []).filter(l => l.sender === session.participantName).reduce((sum, l) => sum + (l.text ? l.text.split(/\s+/).filter(Boolean).length : 0), 0);
+
       tr.innerHTML = `
         <td><strong>${session.participantName}</strong></td>
         <td><code>${session.sessionId}</code></td>
         <td>${session.currentLevel}</td>
+        <td><span style="color:var(--admin-cyan); font-weight:bold;">${wordsCount} w</span></td>
         <td>${session.progress}%</td>
         <td><strong>${session.score}</strong></td>
         <td>${session.timeTaken}</td>
@@ -256,9 +259,9 @@ class AdminUIManager {
         <td><span class="${decisionClass}">${session.finalDecision}</span></td>
         <td><span class="status-pill ${statusClass}">${session.status}</span></td>
         <td><small>${session.startedAt}</small></td>
-        <td><small>${session.completedAt}</small></td>
         <td>
-          <button class="btn-view-logs" data-session-id="${session.sessionId}">VIEW LOGS</button>
+          <button class="btn-view-logs" data-session-id="${session.sessionId}" style="margin-right: 4px;">VIEW LOGS</button>
+          <button class="btn-print-dossier" data-session-id="${session.sessionId}" style="background: rgba(56, 189, 248, 0.15); border: 1px solid var(--admin-primary); color: var(--admin-primary); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: bold;">🖨️ PDF</button>
         </td>
       `;
 
@@ -267,13 +270,28 @@ class AdminUIManager {
         btnLogs.addEventListener('click', () => this.openSessionModal(session));
       }
 
+      const btnPrint = tr.querySelector('.btn-print-dossier');
+      if (btnPrint) {
+        btnPrint.addEventListener('click', () => {
+          if (window.ParticipantDatabase) {
+            const p = window.ParticipantDatabase.getParticipant(session.sessionId) || session;
+            window.ParticipantDatabase.openPrintWindow(p);
+          } else {
+            window.open(`/api/dossier/${session.sessionId}`, '_blank');
+          }
+        });
+      }
+
       this.dom.tableBody.appendChild(tr);
     });
   }
 
   openSessionModal(session) {
     if (!this.dom.modal) return;
-    this.dom.modalTitle.textContent = `SESSION LOGS: ${session.sessionId} (${session.participantName})`;
+    this.dom.modalTitle.textContent = `SESSION LOGS & EVALUATION: ${session.sessionId} (${session.participantName})`;
+
+    const wordsCount = session.userWordCount || (session.logs || []).filter(l => l.sender === session.participantName).reduce((sum, l) => sum + (l.text ? l.text.split(/\s+/).filter(Boolean).length : 0), 0);
+    const promptsCount = session.userPromptCount || (session.logs || []).filter(l => l.sender === session.participantName).length;
 
     // Populate Meta Row
     if (this.dom.modalMetaRow) {
@@ -281,6 +299,10 @@ class AdminUIManager {
         <div class="meta-chip">
           <span class="meta-chip-label">PARTICIPANT</span>
           <span class="meta-chip-val">${session.participantName}</span>
+        </div>
+        <div class="meta-chip">
+          <span class="meta-chip-label">WORDS TYPED</span>
+          <span class="meta-chip-val" style="color: var(--admin-cyan)">${wordsCount} words (${promptsCount} prompts)</span>
         </div>
         <div class="meta-chip">
           <span class="meta-chip-label">FINAL DECISION</span>
@@ -295,8 +317,7 @@ class AdminUIManager {
           <span class="meta-chip-val">${session.timeTaken}</span>
         </div>
         <div class="meta-chip">
-          <span class="meta-chip-label">CLUES & ATTEMPTS</span>
-          <span class="meta-chip-val">${session.cluesUsed} clues / ${session.attempts} att.</span>
+          <button onclick="if(window.ParticipantDatabase){window.ParticipantDatabase.openPrintWindow(window.ParticipantDatabase.getParticipant('${session.sessionId}')||${JSON.stringify(session).replace(/"/g, '&quot;')})}else{window.open('/api/dossier/${session.sessionId}','_blank')}" style="background: var(--admin-primary); color: #000; border: none; font-weight: bold; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">🖨️ PRINT DOSSIER (PDF)</button>
         </div>
       `;
     }
@@ -310,7 +331,8 @@ class AdminUIManager {
         session.logs.forEach(log => {
           const entry = document.createElement('div');
           entry.className = `log-entry ${log.sender === 'DAISY' ? 'log-daisy' : ''}`;
-          entry.innerHTML = `<strong>${log.sender}:</strong> <span>${log.text}</span>`;
+          const wordCount = (log.text || '').trim().split(/\s+/).filter(Boolean).length;
+          entry.innerHTML = `<strong>${log.sender}</strong> <span style="font-size:0.7rem; color:var(--admin-text-dim);">[${wordCount}w]:</span> <span>${log.text}</span>`;
           this.dom.modalTranscriptFeed.appendChild(entry);
         });
       }

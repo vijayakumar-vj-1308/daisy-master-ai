@@ -91,6 +91,13 @@ class StationAudioEngine {
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch (e) {}
+      };
+
       osc.start(now);
       osc.stop(now + 0.65);
     } catch (e) {}
@@ -121,6 +128,13 @@ class StationAudioEngine {
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch (e) {}
+      };
+
       osc.start(now);
       osc.stop(now + 0.04);
     } catch (e) {}
@@ -143,6 +157,13 @@ class StationAudioEngine {
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
+
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch (e) {}
+      };
 
       osc.start(now);
       osc.stop(now + 0.06);
@@ -177,6 +198,14 @@ class StationAudioEngine {
       filter.connect(gain);
       gain.connect(this.ctx.destination);
 
+      whiteNoise.onended = () => {
+        try {
+          whiteNoise.disconnect();
+          filter.disconnect();
+          gain.disconnect();
+        } catch (e) {}
+      };
+
       whiteNoise.start(now);
     } catch (e) {}
   }
@@ -198,6 +227,13 @@ class StationAudioEngine {
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
+
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch (e) {}
+      };
 
       osc.start(now);
       osc.stop(now + 2.0);
@@ -222,6 +258,13 @@ class StationAudioEngine {
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
+        osc.onended = () => {
+          try {
+            osc.disconnect();
+            gain.disconnect();
+          } catch (e) {}
+        };
+
         osc.start(now + idx * 0.15);
         osc.stop(now + idx * 0.15 + 0.85);
       });
@@ -245,6 +288,13 @@ class StationAudioEngine {
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
+
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch (e) {}
+      };
 
       osc.start(now);
       osc.stop(now + 2.2);

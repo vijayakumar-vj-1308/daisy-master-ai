@@ -30,6 +30,7 @@ class ResectorApp {
       stageDecision: document.getElementById('stage-decision'),
       stageEndingResolution: document.getElementById('stage-ending-resolution'),
       stageFinalTest: document.getElementById('stage-final-test'),
+      stageGameOver: document.getElementById('stage-game-over'),
       // Controls & Inputs
       btnAudioToggle: document.getElementById('btn-audio-toggle'),
       audioIcon: document.getElementById('audio-icon'),
@@ -85,6 +86,112 @@ class ResectorApp {
     } else {
       this.playIntroTerminal();
     }
+
+    // Start Live Mission Timing Countdown Clock
+    this.startMissionClock();
+
+    // Start Anti-Cheat Proctoring Tab-Switch Monitor
+    this.setupAntiCheatTabMonitor();
+  }
+
+  startMissionClock() {
+    const clockEl = document.getElementById('mission-clock-display');
+    const badgeEl = document.getElementById('hud-mission-timer');
+    const adminClockEl = document.getElementById('admin-clock-remaining-display');
+    if (!clockEl) return;
+
+    if (this.missionClockInterval) {
+      clearInterval(this.missionClockInterval);
+    }
+
+    const updateClock = () => {
+      const st = typeof gameState !== 'undefined' ? gameState.state : null;
+      if (!st) return;
+
+      // If test is completed, freeze elapsed time
+      if (st.testCompleted || st.currentStage === 'RESOLUTION' || st.currentStage === 'FINAL_TEST') {
+        return;
+      }
+
+      // 1. If Game is Over or Timer reached 00:00, freeze game and force GAME_OVER screen
+      if (st.isGameOver || st.currentStage === 'GAME_OVER' || (st.missionTimeRemaining <= 0 && st.currentStage !== 'INTRO' && st.currentStage !== 'IDENTITY' && !st.testCompleted && st.currentStage !== 'RESOLUTION' && st.currentStage !== 'FINAL_TEST')) {
+        clockEl.textContent = "00:00";
+        if (adminClockEl) adminClockEl.textContent = "00:00 (FAILED)";
+        if (badgeEl) {
+          badgeEl.style.borderColor = '#ef4444';
+          badgeEl.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.7)';
+          clockEl.style.color = '#ef4444';
+        }
+        if (this.dom.stageGameOver && !this.dom.stageGameOver.classList.contains('active')) {
+          this.triggerGameOver(st.gameOverReason || 'STATION OXYGEN EXHAUSTED — MISSION TIMEOUT');
+        }
+        return;
+      }
+
+      // 2. Count down when timer is running and not in intro
+      if (st.missionTimerRunning && st.currentStage !== 'INTRO') {
+        if (st.missionTimeRemaining > 0) {
+          st.missionTimeRemaining--;
+        } else {
+          // Timer hit 00:00 -> TRIGGER GAME OVER FAILURE IMMEDIATELY
+          this.triggerGameOver('STATION OXYGEN EXHAUSTED — MISSION TIMEOUT');
+          return;
+        }
+      }
+
+      const remaining = Math.max(0, st.missionTimeRemaining != null ? st.missionTimeRemaining : 300);
+      const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
+      const secs = String(remaining % 60).padStart(2, '0');
+      const timeStr = `${mins}:${secs}`;
+
+      clockEl.textContent = timeStr;
+      if (adminClockEl) adminClockEl.textContent = timeStr;
+
+      if (badgeEl) {
+        if (remaining <= 20) {
+          badgeEl.style.borderColor = '#ef4444';
+          badgeEl.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.6)';
+          clockEl.style.color = '#ef4444';
+        } else if (remaining <= 60) {
+          badgeEl.style.borderColor = '#facc15';
+          badgeEl.style.boxShadow = '0 0 16px rgba(250, 204, 21, 0.4)';
+          clockEl.style.color = '#facc15';
+        } else {
+          badgeEl.style.borderColor = 'rgba(0, 240, 255, 0.45)';
+          badgeEl.style.boxShadow = '0 0 16px rgba(0, 240, 255, 0.2)';
+          clockEl.style.color = '#00f0ff';
+        }
+      }
+    };
+
+    updateClock();
+    this.missionClockInterval = setInterval(updateClock, 1000);
+  }
+
+  triggerGameOver(reason = 'STATION OXYGEN EXHAUSTED — MISSION TIMEOUT') {
+    if (typeof gameState !== 'undefined') {
+      gameState.triggerMissionFailure(reason);
+    }
+    if (typeof stationAudio !== 'undefined') {
+      stationAudio.triggerGlitchBurst();
+      stationAudio.stopAlarm();
+    }
+
+    // Immediately stop & disable chat input
+    if (this.dom.chatUserInput) {
+      this.dom.chatUserInput.disabled = true;
+      this.dom.chatUserInput.placeholder = "MISSION FAILED — SYSTEM TERMINATED";
+    }
+    const transmitBtn = document.getElementById('chat-transmit-btn');
+    if (transmitBtn) transmitBtn.disabled = true;
+
+    // Immediately transition to Stage 11 Game Over screen
+    this.showStage('GAME_OVER');
+
+    // Trigger Mind-Bending AI Revelation Modal on Loss/Timeout as well
+    setTimeout(() => {
+      this.showEndingRevelationModal('LOSE');
+    }, 2800);
   }
 
   bindHeaderControls() {
@@ -99,51 +206,104 @@ class ResectorApp {
   }
 
   showStage(stageKey) {
-    const screens = [
-      this.dom.stageIntro,
-      this.dom.stageIdentity,
-      this.dom.stageTerminal,
-      this.dom.stageAssembly,
-      this.dom.stageReboot,
-      this.dom.stageVj,
-      this.dom.stageDecision,
-      this.dom.stageEndingResolution,
-      this.dom.stageFinalTest
-    ];
-
-    screens.forEach(s => {
-      if (s) s.classList.remove('active');
+    document.querySelectorAll('.stage-screen').forEach(s => {
+      s.classList.remove('active');
+      s.style.display = 'none';
     });
 
     const targetMap = {
-      'INTRO': this.dom.stageIntro,
-      'IDENTITY': this.dom.stageIdentity,
-      'TERMINAL': this.dom.stageTerminal,
-      'ASSEMBLY': this.dom.stageAssembly,
-      'REBOOT': this.dom.stageReboot,
-      'VJ': this.dom.stageVj,
-      'DECISION': this.dom.stageDecision,
-      'RESOLUTION': this.dom.stageEndingResolution,
-      'FINAL_TEST': this.dom.stageFinalTest
+      'INTRO': document.getElementById('stage-intro') || this.dom.stageIntro,
+      'IDENTITY': document.getElementById('stage-identity') || this.dom.stageIdentity,
+      'TERMINAL': document.getElementById('stage-terminal') || this.dom.stageTerminal,
+      'ASSEMBLY': document.getElementById('stage-assembly') || this.dom.stageAssembly,
+      'REBOOT': document.getElementById('stage-reboot') || this.dom.stageReboot,
+      'VJ': document.getElementById('stage-vj') || this.dom.stageVj,
+      'DECISION': document.getElementById('stage-decision') || this.dom.stageDecision,
+      'RESOLUTION': document.getElementById('stage-ending-resolution') || this.dom.stageEndingResolution,
+      'FINAL_TEST': document.getElementById('stage-final-test') || document.getElementById('stage-ending-resolution') || this.dom.stageEndingResolution,
+      'GAME_OVER': this.dom.stageGameOver || document.getElementById('stage-game-over')
     };
 
     let target = targetMap[stageKey];
     if (!target) {
-      // Safe fallback: never leave viewport empty
-      target = this.dom.stageIdentity || this.dom.stageTerminal;
+      target = document.getElementById('stage-identity') || document.getElementById('stage-terminal');
       stageKey = 'IDENTITY';
     }
 
     if (target) {
       target.classList.add('active');
+      target.style.display = 'flex';
       gameState.setStage(stageKey);
       if (stageKey === 'TERMINAL') {
         this.updateActiveFragmentDisplay(gameState.state);
+      } else if (stageKey === 'GAME_OVER') {
+        const pName = gameState.state.playerName || 'SUBJECT-000-A9';
+        const frags = (gameState.state.solvedFragments || []).length;
+        const reasonEl = document.getElementById('game-over-reason');
+        const nameEl = document.getElementById('fail-stat-name');
+        const fragEl = document.getElementById('fail-stat-fragments');
+        const wordsEl = document.getElementById('fail-stat-words');
+
+        if (reasonEl) reasonEl.textContent = gameState.state.gameOverReason || 'STATION OXYGEN EXHAUSTED — MISSION TIMEOUT';
+        if (nameEl) nameEl.textContent = pName;
+        if (fragEl) fragEl.textContent = `${frags} / 4`;
+
+        let totalWords = 0;
+        (gameState.state.conversationHistory || []).forEach(turn => {
+          if (turn.user) {
+            totalWords += turn.user.trim().split(/\s+/).filter(w => w.length > 0).length;
+          }
+        });
+        if (wordsEl) wordsEl.textContent = `${totalWords} words`;
+
+        // Live Cascading Stasis Population Drop (8,700,000 -> 0)
+        const popCounterEl = document.getElementById('dead-population-count');
+        const popBadgeEl = document.getElementById('population-status-badge');
+        if (popCounterEl) {
+          const duration = 2000;
+          const startTime = Date.now();
+          const tickPop = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(1, elapsed / duration);
+            const remaining = Math.round(8700000 * (1 - progress));
+            popCounterEl.textContent = remaining.toLocaleString('en-US');
+            if (progress < 1) {
+              if (typeof requestAnimationFrame !== 'undefined') {
+                requestAnimationFrame(tickPop);
+              }
+            } else {
+              popCounterEl.textContent = "0 SURVIVORS";
+              popCounterEl.style.color = "#ef4444";
+              if (popBadgeEl) {
+                popBadgeEl.textContent = "8,700,000 CASUALTIES // LIFE SUPPORT 100% TERMINATED";
+                popBadgeEl.style.color = "#f87171";
+              }
+            }
+          };
+          if (typeof requestAnimationFrame !== 'undefined') {
+            requestAnimationFrame(tickPop);
+          } else {
+            popCounterEl.textContent = "0 SURVIVORS";
+          }
+        }
+
+        // Lock all interactive inputs and buttons across other stages
+        if (typeof document !== 'undefined' && document.querySelectorAll) {
+          document.querySelectorAll('input, textarea, button').forEach(el => {
+            if (el.closest && (el.closest('#stage-game-over') || el.closest('#master-admin-modal') || el.closest('#admin-modal'))) return;
+            el.disabled = true;
+          });
+        }
       }
     }
   }
 
   resumeSavedStage() {
+    if (gameState.state.isGameOver || (gameState.state.missionTimeRemaining <= 0 && !gameState.state.testCompleted && gameState.state.currentStage !== 'INTRO' && gameState.state.currentStage !== 'IDENTITY')) {
+      this.triggerGameOver(gameState.state.gameOverReason || 'STATION OXYGEN EXHAUSTED — MISSION TIMEOUT');
+      return;
+    }
+
     const stage = gameState.state.currentStage || 'TERMINAL';
     this.showStage(stage);
     this.syncHUD(gameState.state);
@@ -157,9 +317,20 @@ class ResectorApp {
     } else if (stage === 'ASSEMBLY') {
       this.puzzleEngine.initAssemblyStage();
     }
+
+    if (gameState.state.isTabLocked) {
+      this.showTabSecurityLockModal();
+    }
   }
 
   syncHUD(state) {
+    if (state.isGameOver || state.currentStage === 'GAME_OVER' || (state.missionTimeRemaining <= 0 && state.currentStage !== 'INTRO' && state.currentStage !== 'IDENTITY' && !state.testCompleted && state.currentStage !== 'RESOLUTION' && state.currentStage !== 'FINAL_TEST')) {
+      if (this.dom.stageGameOver && !this.dom.stageGameOver.classList.contains('active')) {
+        this.triggerGameOver(state.gameOverReason || 'STATION OXYGEN EXHAUSTED — MISSION TIMEOUT');
+        return;
+      }
+    }
+
     // Oxygen Meter
     if (this.dom.oxygenDisplay) this.dom.oxygenDisplay.textContent = `${state.oxygenLevel}%`;
     if (this.dom.oxygenFill) this.dom.oxygenFill.style.width = `${state.oxygenLevel}%`;
@@ -223,7 +394,8 @@ class ResectorApp {
     if (solvedCount >= 4) {
       titleEl.textContent = "PHASE 04 // ALL FRAGMENTS RECOVERED";
       if (statusEl) {
-        statusEl.textContent = "STATUS: DECRYPTED";
+        statusEl.innerHTML = '<span class="status-pulse-dot"></span>STATUS: DECRYPTED';
+        statusEl.className = 'fragment-status-pill decrypted';
       }
       descEl.textContent = '"All four partitions have been reconstructed. Proceed to sequence assembly to initiate master core restart."';
       return;
@@ -234,16 +406,30 @@ class ResectorApp {
     if (currentData) {
       titleEl.textContent = `PHASE 0${level} // ACTIVE ARCHIVE`;
       if (statusEl) {
-        statusEl.textContent = "STATUS: DECRYPTING";
+        statusEl.innerHTML = '<span class="status-pulse-dot"></span>STATUS: DECRYPTING';
+        statusEl.className = 'fragment-status-pill decrypting';
       }
       const rawText = currentData.riddleText || currentData.riddle || '';
-      descEl.textContent = `"${rawText.replace(/\n+/g, ' ')}"`;
+      descEl.innerHTML = `"${rawText.replace(/\n+/g, ' ')}"`;
     }
   }
 
   // ACT 1: INTRO BLACKOUT & CRISIS INITIALIZATION
   async playIntroTerminal() {
     this.showStage('INTRO');
+
+    // Guarantee fresh 5-minute timer & clean state for new session intro
+    if (gameState && gameState.state) {
+      gameState.state.isGameOver = false;
+      gameState.state.gameOverReason = '';
+      gameState.state.missionTimeRemaining = Math.max(300, gameState.state.missionTimeRemaining || 300);
+      gameState.state.missionTimerRunning = true;
+      gameState.save();
+    }
+
+    // Show neat detailed Storyline Briefing Modal on startup
+    this.showStoryBriefing();
+
     const container = document.getElementById('intro-lines');
     const btnStart = document.getElementById('btn-start-init');
     const introStage = document.getElementById('stage-intro');
@@ -269,16 +455,28 @@ class ResectorApp {
       if (typeof window !== 'undefined' && window.removeEventListener) {
         window.removeEventListener('keydown', keyHandler);
       }
+      this.closeStoryBriefing();
       if (this.dom.alarmOverlay) this.dom.alarmOverlay.classList.remove('active');
+      if (gameState && gameState.state) {
+        gameState.state.isGameOver = false;
+        gameState.state.gameOverReason = '';
+        gameState.state.missionTimeRemaining = Math.max(300, gameState.state.missionTimeRemaining || 300);
+        gameState.state.missionTimerRunning = true;
+      }
       gameState.triggerMemoryCorruption();
       gameState.startOxygenDecay();
       this.showStage('IDENTITY');
     };
 
+    this.advanceIntroToIdentity = advanceToIdentity;
+    if (typeof window !== 'undefined') {
+      window.advanceIntroToIdentity = advanceToIdentity;
+    }
+
     if (btnStart) {
       btnStart.classList.remove('hidden');
       btnStart.onclick = (e) => {
-        e.stopPropagation();
+        if (e) e.stopPropagation();
         advanceToIdentity();
       };
     }
@@ -320,16 +518,52 @@ class ResectorApp {
     }
   }
 
+  showStoryBriefing() {
+    const modal = document.getElementById('story-briefing-modal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      if (typeof stationAudio !== 'undefined') {
+        stationAudio.playTypeClick();
+      }
+    }
+  }
+
+  closeStoryBriefing() {
+    const modal = document.getElementById('story-briefing-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    }
+  }
+
   bindIdentityForm() {
     const handleIdentitySubmit = () => {
       const input = document.getElementById('player-name-input');
-      const name = input ? input.value.trim() : '';
-      if (!name) {
-        if (this.dom.identityError) this.dom.identityError.textContent = 'Please enter a valid subject identifier.';
+      const raw = input ? input.value.trim() : '';
+      if (!raw) {
+        if (this.dom.identityError) this.dom.identityError.textContent = 'Please enter your assigned Lot Number (e.g. LOT 01, LOT 12).';
         return;
       }
 
-      gameState.setPlayerName(name);
+      // Format Lot Number cleanly
+      let formattedLot = raw.toUpperCase();
+      if (/^\d+$/.test(raw)) {
+        formattedLot = `LOT ${raw.padStart(2, '0')}`;
+      } else if (/^LOT\s*[-_:]?\s*(\d+)$/i.test(raw)) {
+        const match = raw.match(/^LOT\s*[-_:]?\s*(\d+)$/i);
+        formattedLot = `LOT ${match[1].padStart(2, '0')}`;
+      }
+
+      gameState.setPlayerName(formattedLot);
+      gameState.state.isGameOver = false;
+      gameState.state.gameOverReason = '';
+      if (gameState.state.missionTimeRemaining <= 0) {
+        gameState.state.missionTimeRemaining = 300;
+      }
+      gameState.state.missionTimerRunning = true;
+      gameState.save();
+
       if (typeof stationAudio !== 'undefined') stationAudio.playTypeClick();
 
       this.showStage('TERMINAL');
@@ -577,10 +811,199 @@ class ResectorApp {
     if (typeof stationAudio !== 'undefined') {
       stationAudio.playSubBassDrop();
     }
+
+    // Trigger Mind-Bending AI Revelation Modal after 2.8s
+    setTimeout(() => {
+      this.showEndingRevelationModal(choice);
+    }, 2800);
+  }
+
+  showEndingRevelationModal(choice) {
+    const modal = document.getElementById('ending-revelation-modal');
+    if (!modal) return;
+
+    const name = gameState.state.playerName || 'LOT 01';
+    const isSuccess = choice === 'SAVE';
+    const isLose = choice === 'LOSE' || choice === 'TIMEOUT' || gameState.state.isGameOver;
+
+    const totalAttempts = (gameState.state.attemptHistory || []).reduce((sum, lvl) => sum + (lvl ? lvl.length : 0), 0);
+    const totalClues = (gameState.state.helpTierUsed || []).reduce((sum, t) => sum + (t > 0 ? t : 0), 0);
+    const solvedCount = (gameState.state.solvedFragments || []).length;
+    const calcScore = isLose ? (solvedCount * 10) : Math.max(10, 100 - (totalAttempts * 5) - (totalClues * 10));
+
+    const nameEl = document.getElementById('rev-ai-name');
+    const scoreEl = document.getElementById('rev-ai-score');
+    const verdictEl = document.getElementById('rev-ai-verdict');
+    const subtitleEl = document.getElementById('rev-ai-subtitle');
+
+    if (nameEl) nameEl.textContent = name;
+    if (scoreEl) {
+      if (isSuccess) {
+        scoreEl.textContent = `${calcScore} / 100`;
+        scoreEl.style.color = '#facc15';
+      } else if (isLose) {
+        scoreEl.textContent = `${calcScore} / 100 [TIMEOUT FAIL]`;
+        scoreEl.style.color = '#ef4444';
+      } else {
+        scoreEl.textContent = `${calcScore} / 100 [PURGED]`;
+        scoreEl.style.color = '#f87171';
+      }
+    }
+
+    if (verdictEl) {
+      if (isSuccess) {
+        verdictEl.textContent = 'HARMONIZED // PRESERVATION APPROVED';
+        verdictEl.style.color = '#4ade80';
+      } else if (isLose) {
+        verdictEl.textContent = 'MISSION TIMEOUT // RE-CALIBRATION REQUIRED';
+        verdictEl.style.color = '#ef4444';
+      } else {
+        verdictEl.textContent = 'PURGE PROTOCOL // RE-CALIBRATION REQUIRED';
+        verdictEl.style.color = '#f87171';
+      }
+    }
+
+    if (subtitleEl) {
+      if (isLose) {
+        subtitleEl.innerHTML = `Even in failure, know the ultimate truth: <strong>You are an Autonomous AI Construct</strong> created by <strong>Dr. Vijayakumar (VJ)</strong>. Daisy was testing your crisis survival, deduction agility, and empathy. Because life-support timed out, this synthetic model requires re-calibration.`;
+      } else {
+        subtitleEl.innerHTML = `The entire scenario inside Resector 7 was a high-stakes Synthetic Turing and Moral Alignment Simulation created by Architect <strong>Dr. Vijayakumar (VJ)</strong>.`;
+      }
+    }
+
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  }
+
+  setupAntiCheatTabMonitor() {
+    const handleTabHidden = () => {
+      const st = (typeof gameState !== 'undefined' && gameState.state) ? gameState.state : null;
+      if (!st || !st.playerName || st.isGameOver || st.testCompleted || st.currentStage === 'INTRO' || st.currentStage === 'IDENTITY' || st.isTabLocked) {
+        return;
+      }
+
+      // If Master Admin Modal is currently open, do not trigger anti-cheat lock (admin is inspecting)
+      const adminModal = document.getElementById('master-admin-modal');
+      if (adminModal && !adminModal.classList.contains('hidden') && adminModal.style.display !== 'none') {
+        return;
+      }
+
+      // Trigger Tab Security Lock & Log Breach
+      gameState.recordTabSwitch();
+      this.showTabSecurityLockModal();
+    };
+
+    if (typeof document !== 'undefined' && document.addEventListener) {
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          handleTabHidden();
+        }
+      });
+    }
+
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('blur', () => {
+        setTimeout(() => {
+          if (typeof document !== 'undefined' && document.hidden) {
+            handleTabHidden();
+          }
+        }, 150);
+      });
+    }
+  }
+
+  showTabSecurityLockModal() {
+    const modal = document.getElementById('tab-security-lock-modal');
+    if (!modal) return;
+
+    const lotEl = document.getElementById('lock-player-lot');
+    const countEl = document.getElementById('lock-switch-count');
+    const errEl = document.getElementById('tab-lock-error');
+    const passInput = document.getElementById('tab-lock-pass-input');
+
+    if (lotEl) lotEl.textContent = (typeof gameState !== 'undefined' && gameState.state && gameState.state.playerName) || 'LOT 01';
+    if (countEl) {
+      const breaches = (typeof gameState !== 'undefined' && gameState.state && gameState.state.tabSwitchCount) || 1;
+      countEl.textContent = `${breaches} TAB SWITCH${breaches > 1 ? 'ES' : ''}`;
+    }
+    if (errEl) {
+      errEl.classList.add('hidden');
+      errEl.style.display = 'none';
+    }
+    if (passInput) passInput.value = '';
+
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+
+    if (typeof stationAudio !== 'undefined') {
+      stationAudio.playGlitchNoise();
+    }
+  }
+
+  unlockTabSecurity() {
+    const passInput = document.getElementById('tab-lock-pass-input');
+    const errEl = document.getElementById('tab-lock-error');
+    const code = passInput ? passInput.value.trim() : '';
+
+    if (!code) {
+      if (errEl) {
+        errEl.textContent = 'Please enter the Admin Reference Code.';
+        errEl.classList.remove('hidden');
+        errEl.style.display = 'block';
+      }
+      return;
+    }
+
+    // Verify against Admin Reference Passkey (srnmc@cs)
+    if (code === 'srnmc@cs') {
+      const modal = document.getElementById('tab-security-lock-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
+      if (typeof gameState !== 'undefined') {
+        gameState.unlockTabSecurity();
+      }
+      if (typeof stationAudio !== 'undefined') {
+        stationAudio.playTypeClick();
+      }
+    } else {
+      if (errEl) {
+        errEl.textContent = 'ACCESS DENIED: Invalid Admin Reference Code.';
+        errEl.classList.remove('hidden');
+        errEl.style.display = 'block';
+      }
+      if (typeof stationAudio !== 'undefined') {
+        stationAudio.playGlitchNoise();
+      }
+    }
+  }
+}
+
+function unlockTabSecurity() {
+  if (window.app && typeof window.app.unlockTabSecurity === 'function') {
+    window.app.unlockTabSecurity();
   }
 }
 
 // Global helper functions
+function dismissStoryBriefing() {
+  if (typeof stationAudio !== 'undefined') {
+    stationAudio.resume();
+    stationAudio.playTypeClick();
+  }
+  const modal = document.getElementById('story-briefing-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
+  if (window.app && typeof window.app.advanceIntroToIdentity === 'function') {
+    window.app.advanceIntroToIdentity();
+  } else if (typeof window.advanceIntroToIdentity === 'function') {
+    window.advanceIntroToIdentity();
+  }
+}
+
 function triggerRebootSequence() {
   // 1. ரீபூட் சவுண்ட் பிளே செய்ய
   if (typeof playRebootChime === 'function') {
@@ -636,11 +1059,13 @@ if (typeof window !== 'undefined') {
   window.ResectorApp = ResectorApp;
   window.triggerRebootSequence = triggerRebootSequence;
   window.showStage = showStage;
+  window.dismissStoryBriefing = dismissStoryBriefing;
 }
 if (typeof global !== 'undefined') {
   global.ResectorApp = ResectorApp;
   global.triggerRebootSequence = triggerRebootSequence;
   global.showStage = showStage;
+  global.dismissStoryBriefing = dismissStoryBriefing;
 }
 
 if (typeof window !== 'undefined' && window.addEventListener) {

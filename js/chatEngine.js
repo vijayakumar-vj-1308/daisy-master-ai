@@ -51,17 +51,9 @@ class ChatEngine {
     }
   }
 
-  // Mild cosmetic glitch effect maintaining readability
-  applyGlitchText(text, isCorrupted) {
-    if (!isCorrupted || text.length < 10) return text;
-    const chars = text.split('');
-    const glitchSymbols = ['░', '▒', '§', '∆', '·'];
-    for (let i = 0; i < chars.length; i++) {
-      if (Math.random() < 0.012 && chars[i] !== ' ' && chars[i] !== '\n') {
-        chars[i] = glitchSymbols[Math.floor(Math.random() * glitchSymbols.length)];
-      }
-    }
-    return chars.join('');
+  // 100% Crystal-clear clean message text (Glitch character corruption disabled)
+  applyGlitchText(text) {
+    return text || '';
   }
 
   renderUserMessageElement(text) {
@@ -125,7 +117,7 @@ class ChatEngine {
     this.showTyping(false);
 
     const isCorrupted = gameState.state.memoryIntegrity < 100;
-    const glitchedText = isGlitched ? this.applyGlitchText(text, isCorrupted) : text;
+    const cleanText = text || '';
 
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-msg daisy ${isCorrupted ? 'corrupted' : ''}`;
@@ -146,8 +138,8 @@ class ChatEngine {
     await new Promise(resolve => {
       let charIndex = 0;
       const typeInterval = setInterval(() => {
-        if (charIndex < glitchedText.length) {
-          bubble.textContent += glitchedText[charIndex];
+        if (charIndex < cleanText.length) {
+          bubble.textContent += cleanText[charIndex];
           if (charIndex % 3 === 0 && typeof stationAudio !== 'undefined') {
             stationAudio.playDaisyVoiceBlip(isCorrupted);
           }
